@@ -17,8 +17,19 @@ function loadTrainingForEdit(id){const t=state.training.find(x=>x.id===id);if(!t
 function deleteTraining(id){if(!confirm("Delete this training entry? This cannot be undone."))return;state.training=state.training.filter(t=>t.id!==id);save();renderDashboard();renderTraining()}
 
 let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[];
-function rgClear(){if(rgTimer){clearTimeout(rgTimer);rgTimer=null}rgRunning=false;rgGoAt=0;if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;if($("reactionStop"))$("reactionStop").disabled=true;if($("reactionTap"))$("reactionTap").disabled=true}
-let rgVoice=null;
+function rgClear(){
+  if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
+  rgRunning=false;rgGoAt=0;
+  if($("rgStart"))$("rgStart").disabled=false;
+  if($("rgStop"))$("rgStop").disabled=true;
+  if($("reactionStop"))$("reactionStop").disabled=true;
+  if($("reactionTap")){
+    $("reactionTap").disabled=false;
+    $("reactionTap").classList.remove("rg-wait","rg-go");
+    $("reactionTap").classList.add("rg-start");
+    $("reactionTap").textContent="START";
+  }
+}
 function rgInitVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||null;window.speechSynthesis.cancel();return true}catch(e){return false}}
 function rgSpeak(text){try{if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=.92;u.pitch=.98;u.volume=1;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)}catch(e){}}
 function rgNextInterval(){return 2800+Math.random()*1200}
@@ -28,7 +39,21 @@ function rgStartTable(){rgClear();rgInitVoice();$("rgInstruction").textContent="
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes;const avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
 function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";rgGoAt=0;rgSpeak("Ready");rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");$("reactionTap").disabled=false;rgSpeak("Go");rgGoAt=performance.now();rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())},rgReadyGoDelay())}
-function reactionStart(){rgClear();const voiceReady=rgInitVoice();if(voiceReady){try{const u=new SpeechSynthesisUtterance("Ready");u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=.92;u.pitch=.98;u.volume=1;window.speechSynthesis.speak(u)}catch(e){}}rgRunning=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";rgTimer=setTimeout(reactionCycle,700)}
+function reactionStart(){
+  rgClear();
+  rgInitVoice();
+  rgRunning=true;
+  if($("reactionStop"))$("reactionStop").disabled=false;
+  if($("reactionTap")){
+    $("reactionTap").disabled=true;
+    $("reactionTap").classList.remove("rg-start","rg-go");
+    $("reactionTap").classList.add("rg-wait");
+    $("reactionTap").textContent="WAIT FOR GO";
+  }
+  if($("falseStart"))$("falseStart").textContent="";
+  if($("reactionInstruction"))$("reactionInstruction").textContent="GET READY…";
+  rgTimer=setTimeout(reactionCycle,700);
+}
 function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO.";$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="START"}
 function reactionTap(){if(!rgRunning)return;if(!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();setTimeout(()=>{if(rgRunning)reactionCycle()},500)}
 function setReadyGoMode(v){rgMode=v;$("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));$("tableReadyGo").classList.toggle("hidden",v!=="table");$("reactionReadyGo").classList.toggle("hidden",v!=="reaction");rgClear()}
@@ -129,7 +154,15 @@ function renderOpponents(){let names=[...new Set(state.matches.map(m=>m.opponent
 function showOpponent(name){let ms=state.matches.filter(m=>m.opponent===name),weights=[...new Set(ms.map(m=>m.oppWeight).filter(Boolean))].sort((a,b)=>a-b);let heights=[...new Set(ms.map(m=>m.oppHeight).filter(Boolean))].sort((a,b)=>a-b);let sections=["Practice","Tournament","Supermatch"].map(type=>{let x=ms.filter(m=>m.matchType===type),r=rec(x),st=techniqueStats(x),best=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];return `<div class="rec"><b>${type}: ${r[0]}–${r[1]}</b><br><span class="muted">${best?"Best recorded technique: "+esc(best.k)+" · "+Math.round(best.w/best.n*100)+"%":"Not enough technique data"}</span></div>`}).join("");$("opponentDetail").classList.remove("hidden");$("opponentDetail").innerHTML=`<div class="row"><h2>${esc(name)}</h2><button id="closeOpp">Close</button></div><p><b>Weight history:</b> ${weights.length?weights.join(", ")+" lb":"Not recorded"}</p><p><b>Height history:</b> ${heights.length?heights.map(h=>Math.floor(h/12)+"\'"+(h%12)+"\"").join(", "):"Not recorded"}</p>${sections}`;$("closeOpp").addEventListener("click",()=>$("opponentDetail").classList.add("hidden"))}
 $("statScope")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{scope=b.dataset.value;$("statScope").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));renderDashboard()}));
 
-function bindReadyGo(){const reaction=$("reactionTap");if(reaction)reaction.classList.add("rg-start");const mode=$("readyGoMode");if(mode)mode.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>setReadyGoMode(b.dataset.value)));const a=$("rgStart"),b=$("rgStop"),d=$("reactionStop"),e=$("reactionTap");if(a)a.addEventListener("click",rgStartTable);if(b)b.addEventListener("click",rgStopTable);if(d)d.addEventListener("click",reactionStop);if(e)e.addEventListener("click",()=>{if(!rgRunning)reactionStart();else reactionTap()})}
+function bindReadyGo(){
+  const mode=$("readyGoMode");
+  if(mode) mode.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>setReadyGoMode(b.dataset.value)));
+  const tableStart=$("rgStart"), tableStop=$("rgStop"), stop=$("reactionStop"), reactionButton=$("reactionTap");
+  if(tableStart) tableStart.addEventListener("click",rgStartTable);
+  if(tableStop) tableStop.addEventListener("click",rgStopTable);
+  if(stop) stop.addEventListener("click",reactionStop);
+  if(reactionButton) reactionButton.addEventListener("click",()=>{if(!rgRunning) reactionStart(); else reactionTap()});
+}
 try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){console.error("Tracker startup error:",e)}
 bindReadyGo();
 bindReadyGo();
