@@ -884,3 +884,14 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-big-time strong{font-size:clamp(100px,25vw,250px);line-height:.9;font-weight:1000;color:#fff;text-shadow:0 0 25px rgba(72,234,126,.8),0 0 70px rgba(59,156,255,.55)}
 .reaction-big-time small{font-size:.32em;font-weight:900;color:#b9c7d5}
 @keyframes reactionBigPop{0%{opacity:0;transform:scale(.35)}45%{opacity:1;transform:scale(1.16)}70%{transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
+
+/* v3.38 reaction cleanup */
+#rgStart,#rgStop{padding:.62rem 1.15rem!important;min-height:42px!important;font-size:.92rem!important}
+.reaction-light,.rg-light,.reaction-light.ready,.reaction-light.go{width:clamp(105px,30vw,170px)!important;height:clamp(105px,30vw,170px)!important}
+#reactionTap{font-size:1.05rem!important;font-weight:900!important;padding:1rem 1.5rem!important;min-height:58px!important}
+.reaction-big-time{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;background:rgba(3,8,13,.72);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transform:scale(.72)}
+.reaction-big-time.show{opacity:1;visibility:visible;transform:scale(1);animation:reactionBigPop .55s cubic-bezier(.16,1.4,.3,1)}
+.reaction-big-time .reaction-big-label{font-size:clamp(18px,4vw,30px);font-weight:900;letter-spacing:.18em;color:#b9c7d5;margin-bottom:8px;text-transform:uppercase}
+.reaction-big-time strong{font-size:clamp(100px,25vw,250px);line-height:.9;font-weight:1000;color:#fff;text-shadow:0 0 25px rgba(72,234,126,.8),0 0 70px rgba(59,156,255,.55)}
+.reaction-big-time small{font-size:.32em;font-weight:900;color:#b9c7d5}
+@keyframes reactionBigPop{0%{opacity:0;transform:scale(.35)}45%{opacity:1;transform:scale(1.16)}70%{transform:scale(.94)}100%{opacity:1;transform:scale(1)}}
