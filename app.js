@@ -226,12 +226,15 @@ function rgReadyGoDelay(){return 50+Math.random()*150}
 function rgClear(){
   rgCycleToken++;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
-  rgRunning=false;rgGoAt=0;rgPhase="idle";rgSetLights(false,false);motionBaseline=null;motionGoBaseline=null;motionOrientationBaseline=null;motionTriggered=false;
+  rgRunning=false;rgGoAt=0;rgPhase="idle";rgSetLights(false,false);
   if("speechSynthesis" in window)try{window.speechSynthesis.cancel()}catch(e){}
-  if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;
-  if($("reactionStart"))$("reactionStart").disabled=false;if($("reactionStop"))$("reactionStop").disabled=true;
-  if($("reactionTap")){$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="TAP NOW"}
+  if($("rgStart"))$("rgStart").disabled=false;
+  if($("rgStop"))$("rgStop").disabled=true;
+  if($("reactionStart"))$("reactionStart").disabled=false;
+  if($("reactionStop"))$("reactionStop").disabled=true;
+  if($("reactionTap")){$("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP TIMER";}
 }
+
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
   rgPhase="ready";$("rgInstruction").textContent="GET READY…";rgSetLights(true,false);
@@ -261,14 +264,13 @@ function rgStartTable(){
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go"||!rgGoAt)return;
-  rgReactionTimes.push(Math.max(0,t));
-  rgPhase="result";rgGoAt=0;
+  rgReactionTimes.push(Math.max(0,t));rgPhase="result";rgGoAt=0;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
   $("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP TIMER";
   $("reactionInstruction").textContent=Math.round(t)+" ms";
   reactionShowBigTime(t);reactionRender();
   const token=rgCycleToken;
-  rgTimer=setTimeout(()=>{if(rgRunning&&token===rgCycleToken)rgScheduleTable(token)},1400);
+  rgTimer=setTimeout(()=>{if(rgRunning&&token===rgCycleToken)reactionCycle(token)},1400);
 }
 
 function reactionShowBigTime(ms){
@@ -366,15 +368,12 @@ function reactionCycle(token){
   rgSetLights(true,false);
   rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
-    rgPhase="go";
-    rgSetLights(false,true);
-    // The clock starts on the exact same event that switches the green light on.
-    rgGoAt=performance.now();
-    rgBeep();
-    $("reactionTap").disabled=false;$("reactionTap").textContent="TAP TO STOP";
+    rgPhase="go";rgSetLights(false,true);rgGoAt=performance.now();rgBeep();
+    $("reactionTap").disabled=false;$("reactionTap").textContent="TAP TO STOP TIMER";
     $("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
   },rgTimingDelay(rgTiming.readyMin,rgTiming.readyMax));
 }
+
 function reactionStart(){
   rgClear();rgRunning=true;rgPhase="ready";
   $("reactionStart").disabled=true;$("reactionStop").disabled=false;
@@ -387,8 +386,9 @@ function reactionStart(){
 function reactionStop(){
   rgClear();rgSetLights(false,false);
   $("reactionInstruction").textContent="Press START, then wait for the green light.";
-  $("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP";
+  $("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP TIMER";
 }
+
 function reactionTap(){
   if(rgRunning&&rgPhase==="go"&&rgGoAt)reactionRecord(performance.now()-rgGoAt);
 }
@@ -411,7 +411,6 @@ document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",
 $("refreshApp")?.addEventListener("click",async()=>{try{if("serviceWorker" in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.update()}if("caches" in window){const keys=await caches.keys();for(const k of keys)await caches.delete(k)}}catch(e){}location.reload()});
 $("dashNewMatch")?.addEventListener("click",()=>page("match"));
 $("addOpponentBtn")?.addEventListener("click",addOpponent);
-$("reactionMethod")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>setReactionMethod(b.dataset.value)));
 $("newOpponentName")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addOpponent()}});
 for(let w=130;w<=500;w+=5){$("myWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`);$("oppWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`)}
 for(let h=48;h<=96;h++){const ft=Math.floor(h/12),inch=h%12,label=ft+"'"+inch+'"';$("myHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`);$("oppHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`)}
@@ -526,4 +525,3 @@ bindReadyGo();
 bindVoice();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=172").catch(()=>{});
 })();
-$("reactionStop")?.addEventListener("click",()=>{rgClear();$("reactionInstruction").textContent="Press START when you are ready.";});
