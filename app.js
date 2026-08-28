@@ -243,11 +243,11 @@ function reactionMotionHandler(e){
   if(rgPhase!=="go"){motionBaseline=mag;return}
   if(motionBaseline===null){motionBaseline=mag;return}
   const delta=Math.abs(mag-motionBaseline);
-  motionBaseline=motionBaseline*.92+mag*.08;
+  motionBaseline=motionBaseline*.97+mag*.03;
   const a=e.accelerationIncludingGravity||e.acceleration||{};
   const rot=e.rotationRate||{};
   const rotMag=Math.sqrt((rot.alpha||0)**2+(rot.beta||0)**2+(rot.gamma||0)**2);
-  if(!motionTriggered && rgGoAt>0 && (delta>=0.80||rotMag>=35)){
+  if(!motionTriggered && rgGoAt>0 && (delta>=0.45||rotMag>=18)){
     motionTriggered=true;
     reactionRecord(performance.now()-rgGoAt);
   }
@@ -306,7 +306,7 @@ function rgScheduleTable(token){
   },token);
 }
 function rgStartTable(){
-  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
+  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;if(reactionMethod==="motion")startMotionDetection();
   if(reactionMethod==="motion")startMotionDetection();
   $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
@@ -321,12 +321,11 @@ function reactionRecord(t){
   $("reactionTap").textContent=reactionMethod==="motion"?"MOVE TO STOP":"TAP TO STOP";
   $("reactionInstruction").textContent=t.toFixed(0)+" ms";
   reactionShowBigTime(t);reactionRender();
-  // Keep the session running and automatically begin the next round.
   const token=rgCycleToken;
   rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
     rgScheduleTable(token);
-  },1500);
+  },1200);
 }
 
 function reactionRender(){

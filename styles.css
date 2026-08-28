@@ -869,3 +869,11 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-method-picker button.selected{background:linear-gradient(145deg,#3b9cff,#1557b0)!important;color:#fff!important;border-color:#66b8ff!important;box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28)!important}
 #reactionTap{order:2}
 #reactionStart,#reactionStop{order:1}
+
+/* v3.36: reaction method below stop/reaction button */
+.reaction-controls{display:flex;flex-direction:column;align-items:center;gap:12px}
+.reaction-method-picker{order:4;width:min(420px,100%);margin:0}
+#reactionTap{order:3}
+#reactionStart,#reactionStop{order:1}
+.reaction-method-picker button{min-height:44px;font-weight:800}
+.reaction-method-picker button.selected{background:linear-gradient(145deg,#3b9cff,#1557b0)!important;color:#fff!important;border-color:#66b8ff!important;box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28)!important}
