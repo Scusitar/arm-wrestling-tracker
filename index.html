@@ -64,9 +64,10 @@
         <button type="button" data-value="Supermatch">Supermatch</button>
       </div>
 
-      <div class="two">
-        <div><label>Arm</label><div class="segmented" id="arm"><button type="button" data-value="Right" class="selected">Right</button><button type="button" data-value="Left">Left</button></div></div>
-        <div><label>Strap</label><div class="segmented" id="strap"><button type="button" data-value="No" class="selected">No</button><button type="button" data-value="Yes">Yes</button></div></div>
+      <div>
+        <label>Arm</label>
+        <div class="segmented" id="arm"><button type="button" data-value="Right" class="selected">Right</button><button type="button" data-value="Left">Left</button></div>
+      </div>
       </div>
 
       <label>Table side when facing head referee</label>
@@ -88,6 +89,8 @@
       </select></label>
 
       <div id="singleFields">
+        <label>Strap</label>
+        <div class="segmented" id="singleStrap"><button type="button" data-value="No" class="selected">No</button><button type="button" data-value="Yes">Yes</button></div>
         <label>Result</label>
         <div class="segmented" id="result"><button type="button" data-value="Win" class="selected">WIN</button><button type="button" data-value="Loss">LOSS</button></div>
         <label>Who got the GO?</label>
@@ -105,7 +108,7 @@
       </div>
 
       <div id="superFields" class="hidden">
-        <div class="notice"><b>Supermatch</b><br>Strap is recorded for the match. Result, GO, techniques and length are recorded for each round.</div>
+        <div class="notice"><b>Supermatch</b><br>Strap is recorded separately for every round. Result, GO, techniques and length are also recorded for every round.</div>
         <div id="rounds"></div>
         <button type="button" id="addRound">+ Add Round</button>
       </div>
