@@ -32,53 +32,6 @@ function voiceUpdate(){
   $("goCount").textContent=voiceDB.go.filter(Boolean).length+" / 10";
 }
 function voiceSetType(t){voiceType=t;voiceSlot=0;voiceCurrentBlob=null;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===t))}
-let voiceAudioCtx=null,voiceAnalyser=null,voiceWaveFrame=null,voiceWaveSource=null;
-function voiceWaveDraw(){
-  const c=$("voiceWave");if(!c||!voiceAnalyser)return;
-  const ctx=c.getContext("2d"),data=new Uint8Array(voiceAnalyser.fftSize);
-  const draw=()=>{
-    if(!voiceAnalyser)return;
-    voiceWaveFrame=requestAnimationFrame(draw);
-    const dpr=window.devicePixelRatio||1,w=Math.max(1,c.clientWidth*dpr),h=Math.max(1,c.clientHeight*dpr);
-    if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
-    ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.lineWidth=3;
-    ctx.strokeStyle=getComputedStyle(document.body).color||"#2563eb";
-    voiceAnalyser.getByteTimeDomainData(data);
-    for(let i=0;i<data.length;i++){const x=i/(data.length-1)*w,y=h/2+(data[i]-128)/128*h*.38;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
-    ctx.stroke();
-  };draw();
-}
-function voiceWaveStartStream(){
-  const c=$("voiceWave");if(!c||!voiceStream)return;
-  try{
-    voiceWaveStop();
-    voiceAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    if(voiceAudioCtx.state==="suspended")voiceAudioCtx.resume();
-    voiceAnalyser=voiceAudioCtx.createAnalyser();voiceAnalyser.fftSize=1024;
-    voiceWaveSource=voiceAudioCtx.createMediaStreamSource(voiceStream);
-    voiceWaveSource.connect(voiceAnalyser);c.style.display="block";voiceWaveDraw();
-  }catch(e){if(c)c.style.display="none"}
-}
-function voiceWaveStartAudio(audio){
-  const c=$("voiceWave");if(!c||!audio)return;
-  try{
-    voiceWaveStop();
-    voiceAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
-    if(voiceAudioCtx.state==="suspended")voiceAudioCtx.resume();
-    voiceAnalyser=voiceAudioCtx.createAnalyser();voiceAnalyser.fftSize=1024;
-    voiceWaveSource=voiceAudioCtx.createMediaElementSource(audio);
-    voiceWaveSource.connect(voiceAnalyser);voiceAnalyser.connect(voiceAudioCtx.destination);
-    c.style.display="block";voiceWaveDraw();
-  }catch(e){}
-}
-function voiceWaveStop(){
-  if(voiceWaveFrame)cancelAnimationFrame(voiceWaveFrame);voiceWaveFrame=null;
-  try{voiceWaveSource?.disconnect()}catch(e){}
-  voiceWaveSource=null;voiceAnalyser=null;
-  try{voiceAudioCtx?.close()}catch(e){}
-  voiceAudioCtx=null;
-  const c=$("voiceWave");if(c)c.style.display="none";
-}
 async function voiceRecord(){
   try{
     if(!window.isSecureContext){$("voiceStatus").textContent="Open the GitHub Pages HTTPS address to record.";return}
@@ -95,7 +48,7 @@ async function voiceRecord(){
     voiceRecorder.onstop=()=>{
       const type=voiceRecorder.mimeType||mime||"audio/webm";
       voiceCurrentBlob=new Blob(voiceChunks,{type});
-      voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+      voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
       voiceRecorder=null;
       $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
       if(voiceCurrentBlob.size>0){
@@ -105,11 +58,10 @@ async function voiceRecord(){
       }else $("voiceStatus").textContent="No audio data was captured. Please try again.";
     };
     voiceRecorder.start();
-    voiceWaveStartStream();
     $("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");
     $("voiceStatus").textContent="Recording… speak now.";
   }catch(e){
-    voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
+    voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
     $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
     $("voiceStatus").textContent=e?.name==="NotAllowedError"?"Microphone permission was denied.":"Could not start recording: "+(e?.message||e?.name||"unknown error");
   }
@@ -129,12 +81,11 @@ function voicePlay(){
     if(voicePlayback){voicePlayback.pause();voicePlayback=null}
     if(voicePlaybackUrl){URL.revokeObjectURL(voicePlaybackUrl);voicePlaybackUrl=null}
     voicePlaybackUrl=typeof data==="string"?data:URL.createObjectURL(data);
-    voicePlayback=new Audio(voicePlaybackUrl);voicePlayback.preload="auto";
-    voicePlayback.onplay=()=>{voiceWaveStartAudio(voicePlayback);$("voiceStatus").textContent="Playing… waveform shows playback."};
-    voicePlayback.onended=()=>{voiceWaveStop();$("voiceStatus").textContent="Playback finished."};
-    voicePlayback.onerror=()=>{voiceWaveStop();$("voiceStatus").textContent="Could not play this recording."};
-    voicePlayback.play().catch(()=>{$("voiceStatus").textContent="Tap PLAY again to allow playback."});
-  }catch(e){voiceWaveStop();$("voiceStatus").textContent="Could not play this recording."}
+    voicePlayback=new Audio(voicePlaybackUrl);
+    voicePlayback.onended=()=>{$("voiceStatus").textContent="Playback finished."};
+    voicePlayback.onerror=()=>{$("voiceStatus").textContent="Could not play this recording."};
+    voicePlayback.play().then(()=>{$("voiceStatus").textContent="Playing…"}).catch(()=>{$("voiceStatus").textContent="Tap PLAY again to allow playback."});
+  }catch(e){$("voiceStatus").textContent="Could not play this recording."}
 }
 async function voiceKeep(){
   if(!voiceCurrentBlob)return;
@@ -179,7 +130,7 @@ function rgSay(text,onStart,onEnd){
   }catch(e){if(onEnd)onEnd();return false}
 }
 function rgNextInterval(){return 2800+Math.random()*1200}
-function rgReadyGoDelay(){return 100+Math.random()*200}
+function rgReadyGoDelay(){return 200+Math.random()*400}
 function rgClear(){if(rgTimer){clearTimeout(rgTimer);rgTimer=null}rgRunning=false;rgGoAt=0;if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;if($("reactionStop"))$("reactionStop").disabled=true;if($("reactionTap")){$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="START"}}
 function rgSchedule(){if(!rgRunning)return;$("rgInstruction").textContent="READY";rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("rgInstruction").textContent="GO";rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(rgSchedule,rgNextInterval())})},rgReadyGoDelay())})}
 function rgStartTable(){rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;$("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;rgTimer=setTimeout(rgSchedule,100)}

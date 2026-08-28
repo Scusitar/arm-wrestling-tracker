@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.1</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v2.8</b></p>
   </div>
 </header>
 
@@ -213,13 +213,13 @@
     <div class="voice-progress"><b id="voiceProgress">Ready 1 of 10</b></div>
     <div class="voice-card">
       <h3 id="voiceSlotTitle">Ready 1</h3>
-      <p id="voiceStatus" class="muted">No recording yet.</p><canvas id="voiceWave" class="voice-wave" aria-label="Live recording waveform"></canvas>
+      <p id="voiceStatus" class="muted">No recording yet.</p>
       <div class="voice-buttons">
         <button type="button" id="voiceRecord" class="voice-record">● RECORD</button>
         <button type="button" id="voicePlay" disabled>▶ PLAY</button>
         <button type="button" id="voiceKeep" disabled>✓ KEEP</button>
       </div>
-      <p class="muted">Say the command naturally and clearly. After STOP, the app will show the captured audio size. The waveform also appears during playback.</p>
+      <p class="muted">Say the command naturally and clearly. After STOP, the app will show the captured audio size. You can re-record any slot.</p>
     </div>
     <div class="two">
       <div class="rec"><b>Ready recordings</b><br><span id="readyCount">0 / 10</span></div>
@@ -234,6 +234,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=310"></script>
+<script src="app.js?v=280"></script>
 </body>
 </html>

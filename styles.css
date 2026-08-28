@@ -18,5 +18,3 @@
 .voice-progress{text-align:center;margin:12px 0}.voice-card{text-align:center;padding:16px;border:1px solid #ccc;border-radius:12px;margin:12px 0}.voice-buttons{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}.voice-record{background:#d71920;color:#fff;border-color:#8b0000}.voice-record.recording{background:#8b0000}.voice-buttons button{min-height:46px;font-weight:700}
 
 .voice-library-status{text-align:center;font-weight:700;padding:12px;border-radius:10px;background:#eaf4ff;margin-top:12px}
-
-.voice-wave{display:none;width:100%;height:90px;margin:10px 0;border-radius:10px;background:#f3f6fa;border:1px solid #d8dee8}
