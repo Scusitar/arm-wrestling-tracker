@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=172">
+<link rel="stylesheet" href="styles.css?v=173">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.20</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.21</b></p>
   </div>
 </header>
 
@@ -204,7 +204,7 @@
           <label for="tpRoundMax">Between-round maximum <output id="tpRoundMaxValue">5.50 s</output></label>
           <input id="tpRoundMax" type="range" min="1.10" max="10.00" step="0.10" value="5.50">
         </div>
-        <button type="button" id="tpTimingReset" class="timing-reset">Reset timing</button>
+        
         <div class="reaction-setting round-speed-setting">
           <label for="tpRoundSpeed">Ready–Go round speed <output id="tpRoundSpeedValue">1.00×</output></label>
           <input id="tpRoundSpeed" type="range" min="0.75" max="1.50" step="0.05" value="1.00">
@@ -215,7 +215,8 @@
           <input id="tpVoiceSpeed" type="range" min="0.80" max="1.50" step="0.05" value="1.00">
           <span class="muted timing-help">Speeds up or slows down the recorded Ready and Go calls.</span>
         </div>
-      </div>
+      
+<button type="button" id="tpTimingReset" class="timing-reset">Reset timing</button></div>
     </div>
 
     <div id="reactionReadyGo" class="hidden">
@@ -250,8 +251,9 @@
 <div class="reaction-setting"><label for="rgReadyMax">Between Ready and Go maximum <output id="rgReadyMaxValue">1.00 s</output></label><input id="rgReadyMax" type="range" min="0.15" max="2.00" step="0.05" value="1.00"></div>
 <div class="reaction-setting"><label for="rgRoundMin">Between-round minimum <output id="rgRoundMinValue">5.00 s</output></label><input id="rgRoundMin" type="range" min="2.00" max="12.00" step="0.10" value="5.00"></div>
 <div class="reaction-setting"><label for="rgRoundMax">Between-round maximum <output id="rgRoundMaxValue">8.00 s</output></label><input id="rgRoundMax" type="range" min="2.10" max="15.00" step="0.10" value="8.00"></div>
-<button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button>
-</div>
+
+
+<button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button></div>
 
       
       <p id="falseStart" class="muted" aria-live="polite"></p>
@@ -291,6 +293,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=500"></script>
+<script src="app.js?v=510"></script>
 </body>
 </html>
