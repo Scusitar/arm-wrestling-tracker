@@ -261,7 +261,7 @@ function reactionShowBigTime(ms){
  void overlay.offsetWidth;
  overlay.classList.add("show");
  clearTimeout(reactionShowBigTime.timer);
- reactionShowBigTime.timer=setTimeout(()=>overlay.classList.remove("show"),1800);
+ reactionShowBigTime.timer=setTimeout(()=>overlay.classList.remove("show"),850);
 }
 
 function tpUpdateRoundSpeedUI(){
@@ -406,7 +406,11 @@ function reactionTap(){
 
 function setReadyGoMode(v){
  rgMode=v;
- $("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));
+ $("readyGoMode").querySelectorAll("button").forEach(b=>{
+   const active=b.dataset.value===v;
+   b.classList.toggle("selected",active);
+   b.setAttribute("aria-pressed",active?"true":"false");
+ });
  $("tableReadyGo").classList.toggle("hidden",v!=="table");
  $("reactionReadyGo").classList.toggle("hidden",v!=="reaction");
  const voiceCard=$("voiceSetupCard");

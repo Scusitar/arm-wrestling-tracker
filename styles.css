@@ -823,3 +823,22 @@ option{background:#0b121a !important;color:#fff !important}
   70%{transform:scale(.94)}
   100%{opacity:1;transform:scale(1)}
 }
+
+/* v3.27: Ready Go Reaction mode-button visibility */
+#readyGoMode button{
+  background:#17222e !important;color:#e9edf2 !important;
+  border:1px solid #405466 !important;
+  transition:transform .12s ease,background .15s ease,box-shadow .15s ease;
+}
+#readyGoMode button.selected,
+#readyGoMode button[aria-pressed="true"]{
+  background:linear-gradient(145deg,#3b9cff,#1557b0) !important;
+  color:#fff !important;border-color:#66b8ff !important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.24),0 5px 14px rgba(0,0,0,.3) !important;
+}
+#readyGoMode button:active{transform:scale(.98)}
+
+/* v3.27: shorter, centered result pop */
+.reaction-big-time{z-index:9999;align-items:center;justify-content:center;text-align:center}
+.reaction-big-time.show{animation:reactionBigPop .55s cubic-bezier(.16,1.4,.3,1)}
+.reaction-big-time strong{font-size:clamp(105px,25vw,250px)}
