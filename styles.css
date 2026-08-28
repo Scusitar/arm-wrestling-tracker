@@ -22,3 +22,7 @@
 .voice-wave{display:none;width:100%;height:90px;margin:10px 0;border-radius:10px;background:#f3f6fa;border:1px solid #d8dee8}
 
 .match-penalties{margin-top:10px}.match-penalties input{width:100%}
+
+.voice-setup-card{margin-top:24px;border-top:3px solid currentColor}.voice-setup-card h2{margin-top:0}
+
+.reaction-controls{display:flex;justify-content:center;gap:18px;align-items:center;margin:12px 0}.reaction-start-button,.reaction-stop-button{width:86px;height:86px;border-radius:50%;font-weight:800;color:#fff;border:3px solid;touch-action:manipulation}.reaction-start-button{background:#20a852;border-color:#16803c}.reaction-stop-button{background:#d71920;border-color:#8b0000}.reaction-tap-button{width:100%;min-height:90px;font-size:1.25rem;font-weight:800}.reaction-start-button:disabled,.reaction-stop-button:disabled{opacity:.45}
