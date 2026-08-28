@@ -144,6 +144,22 @@ async function voiceKeep(){
   reader.onload=()=>{voiceDB[voiceType][voiceSlot]=reader.result;voiceCurrentBlob=null;voiceSave();voiceUpdate();$("voiceStatus").textContent="Saved. Next slot is ready.";if(voiceSlot<9){voiceSlot++;voiceUpdate()}else if(voiceType==="ready"){voiceType="go";voiceSlot=0;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===voiceType));$("voiceSetupMessage").textContent="All 10 Ready calls saved. Now record your 10 Go calls."}else{$("voiceSetupMessage").textContent="All 20 voice recordings are saved and ready to use."}};
   reader.readAsDataURL(voiceCurrentBlob);
 }
+function rgSetLights(readyOn,goOn){
+  const y=$("reactionReadyLight"),g=$("reactionGoLight");
+  if(y)y.classList.toggle("on",!!readyOn);
+  if(g)g.classList.toggle("on",!!goOn);
+}
+function rgBeep(){
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+    if(!window.__rgAudioCtx)window.__rgAudioCtx=new AC();
+    const c=window.__rgAudioCtx;if(c.state==="suspended")c.resume().catch(()=>{});
+    const o=c.createOscillator(),gain=c.createGain(),now=c.currentTime;
+    o.type="sine";o.frequency.setValueAtTime(880,now);
+    gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(.25,now+.008);gain.gain.exponentialRampToValueAtTime(.001,now+.13);
+    o.connect(gain);gain.connect(c.destination);o.start(now);o.stop(now+.14);
+  }catch(e){}
+}
 let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[],rgVoice=null,rgLastVoice={ready:-1,go:-1},rgPhase="idle",rgCycleToken=0;
 function rgLoadVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return true}catch(e){return false}}
 if("speechSynthesis" in window){window.speechSynthesis.addEventListener("voiceschanged",rgLoadVoice);rgLoadVoice()}
@@ -172,7 +188,7 @@ function rgReadyGoDelay(){return 50+Math.random()*150}
 function rgClear(){
   rgCycleToken++;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
-  rgRunning=false;rgGoAt=0;rgPhase="idle";
+  rgRunning=false;rgGoAt=0;rgPhase="idle";rgSetLights(false,false);
   if("speechSynthesis" in window)try{window.speechSynthesis.cancel()}catch(e){}
   if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;
   if($("reactionStart"))$("reactionStart").disabled=false;if($("reactionStop"))$("reactionStop").disabled=true;
@@ -202,30 +218,48 @@ function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START whe
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
 function reactionCycle(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";rgGoAt=0;$("reactionInstruction").textContent="";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");
-  rgPlayClip("ready",null,()=>{
+  rgPhase="ready";rgGoAt=0;
+  $("reactionInstruction").textContent="";
+  $("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";
+  $("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");
+  rgSetLights(true,false);
+  rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
-    rgTimer=setTimeout(()=>{
-      if(!rgRunning||token!==rgCycleToken)return;
-      rgPhase="go";$("reactionInstruction").textContent="";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
-      rgPlayClip("go",()=>{if(token===rgCycleToken&&rgRunning){rgGoAt=performance.now()}},()=>{
-        if(!rgRunning||token!==rgCycleToken)return;
-        rgPhase="waiting";rgTimer=setTimeout(()=>{if(rgRunning&&token===rgCycleToken&&!rgGoAt)reactionCycle(token)},rgNextInterval());
-      },token);
-    },rgReadyGoDelay());
-  },token);
+    rgPhase="go";
+    rgSetLights(false,true);
+    // The clock starts on the exact same event that switches the green light on.
+    rgGoAt=performance.now();
+    rgBeep();
+    $("reactionTap").disabled=false;$("reactionTap").textContent="TAP TO STOP";
+    $("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
+  },50+Math.random()*150);
 }
 function reactionStart(){
-  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;rgPhase="ready";
-  $("reactionStart").disabled=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";
+  rgClear();rgRunning=true;rgPhase="ready";
+  $("reactionStart").disabled=true;$("reactionStop").disabled=false;
+  $("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";
+  $("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");
+  $("falseStart").textContent="";$("reactionInstruction").textContent="";rgSetLights(false,false);
+  try{const AC=window.AudioContext||window.webkitAudioContext;if(AC){if(!window.__rgAudioCtx)window.__rgAudioCtx=new AC();if(window.__rgAudioCtx.state==="suspended")window.__rgAudioCtx.resume().catch(()=>{});}}catch(e){}
   const token=rgCycleToken;rgTimer=setTimeout(()=>reactionCycle(token),100);
 }
-function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO.";$("reactionTap").disabled=true;$("reactionTap").textContent="TAP NOW"}
+function reactionStop(){
+  rgClear();rgSetLights(false,false);
+  $("reactionInstruction").textContent="Press START, then wait for the green light.";
+  $("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP";
+}
 function reactionTap(){
   if(!rgRunning)return;
-  if(rgPhase!=="go"||!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}
-  const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;rgPhase="idle";$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();rgTimer=setTimeout(()=>{if(rgRunning){const token=rgCycleToken;reactionCycle(token)}},500);
+  if(rgPhase!=="go"||!rgGoAt){$("falseStart").textContent="False start — wait for the green light.";return}
+  const t=performance.now()-rgGoAt;
+  rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();
+  rgGoAt=0;rgPhase="idle";rgSetLights(false,false);
+  $("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go");$("reactionTap").classList.add("rg-wait");
+  $("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";$("falseStart").textContent="";
+  reactionRender();
+  rgTimer=setTimeout(()=>{if(rgRunning){const token=rgCycleToken;reactionCycle(token)}},500);
 }
+
 function setReadyGoMode(v){rgMode=v;$("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));$("tableReadyGo").classList.toggle("hidden",v!=="table");$("reactionReadyGo").classList.toggle("hidden",v!=="reaction");rgClear()}
 function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="dashboard")renderDashboard();if(id==="history")renderHistory();if(id==="opponents")renderOpponents();if(id==="training")renderTraining()}
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.page)));

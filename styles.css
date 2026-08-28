@@ -26,3 +26,184 @@
 .voice-setup-card{margin-top:24px;border-top:3px solid currentColor}.voice-setup-card h2{margin-top:0}
 
 .reaction-controls{display:flex;justify-content:center;gap:18px;align-items:center;margin:12px 0}.reaction-start-button,.reaction-stop-button{width:86px;height:86px;border-radius:50%;font-weight:800;color:#fff;border:3px solid;touch-action:manipulation}.reaction-start-button{background:#20a852;border-color:#16803c}.reaction-stop-button{background:#d71920;border-color:#8b0000}.reaction-tap-button{width:100%;min-height:90px;font-size:1.25rem;font-weight:800}.reaction-start-button:disabled,.reaction-stop-button:disabled{opacity:.45}
+
+.reaction-lights{display:flex;justify-content:center;align-items:center;gap:28px;margin:14px 0 18px}
+.reaction-light{width:92px;height:92px;border-radius:50%;border:5px solid rgba(255,255,255,.14);background:#171a1f;box-shadow:inset 0 0 0 4px rgba(0,0,0,.22);transition:background .04s linear,box-shadow .04s linear,transform .04s linear}
+.reaction-light.reaction-yellow.on{background:#ffd21a;border-color:#ffe46a;box-shadow:0 0 12px #ffd21a,0 0 30px rgba(255,210,26,.65),inset 0 0 18px rgba(255,255,255,.45);transform:scale(1.04)}
+.reaction-light.reaction-green.on{background:#24d94f;border-color:#8cff9e;box-shadow:0 0 12px #24d94f,0 0 34px rgba(36,217,79,.75),inset 0 0 18px rgba(255,255,255,.45);transform:scale(1.04)}
+#reactionTap.rg-go{transform:scale(1.05);box-shadow:0 0 18px rgba(36,217,79,.9),0 0 48px rgba(36,217,79,.65);font-size:1.3em;font-weight:900}
+#reactionTap.rg-wait{opacity:.8}
+@media(max-width:520px){.reaction-lights{gap:18px}.reaction-light{width:72px;height:72px}}
+
+/* ===== v3.9 Dark Neon UI ===== */
+:root{
+  --bg:#03070d;
+  --panel:#071019;
+  --panel2:#0a131d;
+  --panel3:#0d1722;
+  --line:#1d2a38;
+  --text:#f4f7fb;
+  --muted:#aab5c2;
+  --cyan:#00c8ff;
+  --cyan2:#008cff;
+  --yellow:#ffd500;
+  --green:#21e64a;
+  --red:#ff3038;
+  --shadow:0 16px 45px rgba(0,0,0,.38);
+}
+
+html,body{
+  background:
+    radial-gradient(circle at 80% 0%,rgba(0,136,255,.07),transparent 34%),
+    radial-gradient(circle at 10% 70%,rgba(0,200,255,.035),transparent 30%),
+    var(--bg) !important;
+  color:var(--text) !important;
+}
+
+body{
+  min-height:100vh;
+  letter-spacing:.01em;
+}
+
+#app,main,.app,.page{
+  color:var(--text);
+}
+
+header{
+  background:linear-gradient(180deg,rgba(5,12,20,.98),rgba(4,10,17,.94)) !important;
+  border-bottom:1px solid var(--line) !important;
+}
+
+.card,.panel,.section,.match-card,.training-card,
+.voice-setup-card{
+  background:linear-gradient(145deg,rgba(10,18,28,.97),rgba(4,10,17,.98)) !important;
+  border:1px solid var(--line) !important;
+  box-shadow:var(--shadow);
+  border-radius:18px !important;
+}
+
+h1,h2,h3,h4{
+  color:#fff !important;
+  letter-spacing:-.02em;
+}
+
+button{
+  border:1px solid #293949 !important;
+  background:linear-gradient(180deg,#111d29,#0a121b) !important;
+  color:#f7f9fc !important;
+  border-radius:12px !important;
+  box-shadow:0 5px 16px rgba(0,0,0,.28);
+  transition:transform .12s ease,box-shadow .12s ease,border-color .12s ease;
+}
+button:hover{
+  transform:translateY(-1px);
+  border-color:#3c5267 !important;
+}
+button:active{transform:translateY(1px)}
+
+.tabs button.active,
+button.active,
+button[aria-selected="true"]{
+  background:linear-gradient(180deg,#079be5,#0076c7) !important;
+  border-color:#00c8ff !important;
+  box-shadow:0 0 22px rgba(0,200,255,.22);
+}
+
+input,select,textarea{
+  background:#050c13 !important;
+  color:#fff !important;
+  border:1px solid #263747 !important;
+  border-radius:10px !important;
+}
+input:focus,select:focus,textarea:focus{
+  outline:none;
+  border-color:var(--cyan) !important;
+  box-shadow:0 0 0 3px rgba(0,200,255,.12);
+}
+
+.muted,p.muted,.muted-text{
+  color:var(--muted) !important;
+}
+
+.reaction-lights{
+  background:linear-gradient(145deg,#03080e,#071019);
+  border:1px solid #1d2a38;
+  border-radius:16px;
+  padding:24px 18px 30px;
+  box-shadow:inset 0 0 35px rgba(0,0,0,.42);
+}
+.reaction-light{
+  width:108px !important;
+  height:108px !important;
+  background:#111820 !important;
+  border:6px solid #27333e !important;
+  box-shadow:inset 0 0 0 4px #05090d,0 5px 15px rgba(0,0,0,.5) !important;
+}
+.reaction-light.reaction-yellow.on{
+  background:radial-gradient(circle at 42% 36%,#fff79a 0,#ffe600 28%,#ffae00 72%,#ff8c00 100%) !important;
+  border-color:#ffe94d !important;
+  box-shadow:0 0 18px #ffd500,0 0 55px rgba(255,190,0,.72),inset 0 0 24px rgba(255,255,255,.55) !important;
+}
+.reaction-light.reaction-green.on{
+  background:radial-gradient(circle at 42% 36%,#c8ffcc 0,#25f34c 28%,#05bd36 72%,#008b28 100%) !important;
+  border-color:#8aff9c !important;
+  box-shadow:0 0 18px #21e64a,0 0 60px rgba(33,230,74,.72),inset 0 0 24px rgba(255,255,255,.45) !important;
+}
+
+.reaction-controls{
+  gap:24px !important;
+  margin:18px 0 !important;
+}
+.reaction-start-button,.reaction-stop-button{
+  width:96px !important;
+  height:96px !important;
+  font-size:1rem !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.45) !important;
+}
+.reaction-start-button{
+  background:radial-gradient(circle at 40% 35%,#31e65a,#07952c 75%) !important;
+  border:3px solid #1fdc4c !important;
+  box-shadow:0 0 22px rgba(33,230,74,.25),0 8px 24px rgba(0,0,0,.45) !important;
+}
+.reaction-stop-button{
+  background:radial-gradient(circle at 40% 35%,#ff555a,#c81019 75%) !important;
+  border:3px solid #ff3b42 !important;
+  box-shadow:0 0 22px rgba(255,48,56,.22),0 8px 24px rgba(0,0,0,.45) !important;
+}
+#reactionTap{
+  min-height:108px !important;
+  border-radius:18px !important;
+  font-size:clamp(1.5rem,5vw,2.15rem) !important;
+  font-weight:900 !important;
+  letter-spacing:.04em;
+  background:linear-gradient(145deg,#102018,#08140d) !important;
+  border:3px solid #25783a !important;
+}
+#reactionTap.rg-go{
+  background:radial-gradient(circle at 50% 35%,#29ee4e,#078d28 78%) !important;
+  border-color:#67ff7e !important;
+  color:#fff !important;
+  box-shadow:0 0 18px #21e64a,0 0 55px rgba(33,230,74,.65),inset 0 0 30px rgba(255,255,255,.1) !important;
+}
+#reactionTap.rg-wait{
+  background:linear-gradient(145deg,#101b17,#09110d) !important;
+  border-color:#285b35 !important;
+}
+
+.match-penalties{
+  gap:12px;
+}
+
+.voice-setup-card{
+  border-top:1px solid #263746 !important;
+}
+.voice-setup-card button{
+  border-color:#334454 !important;
+}
+
+@media(max-width:520px){
+  .reaction-light{width:78px !important;height:78px !important}
+  .reaction-controls{gap:16px !important}
+  .reaction-start-button,.reaction-stop-button{width:82px !important;height:82px !important}
+  #reactionTap{min-height:96px !important}
+}

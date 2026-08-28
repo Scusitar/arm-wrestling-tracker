@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.7</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.9</b></p>
   </div>
 </header>
 
@@ -190,12 +190,16 @@
 
     <div id="reactionReadyGo" class="hidden">
       <h3>Reaction Game</h3>
-      <p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
+      <div id="reactionLights" class="reaction-lights" aria-label="Reaction lights">
+  <div id="reactionReadyLight" class="reaction-light reaction-yellow" aria-label="Ready light"></div>
+  <div id="reactionGoLight" class="reaction-light reaction-green" aria-label="Go light"></div>
+</div>
+<p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
       <div class="reaction-controls">
   <button type="button" id="reactionStart" class="reaction-start-button">START</button>
   <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
 </div>
-<button type="button" id="reactionTap" class="reaction-tap-button" disabled>TAP NOW</button>
+<button type="button" id="reactionTap" class="reaction-tap-button" disabled>TAP TO STOP</button>
       <div class="two">
         <div class="rec"><b>Best</b><br><span id="reactionBest">—</span></div>
         <div class="rec"><b>Average</b><br><span id="reactionAvg">—</span></div>
@@ -239,6 +243,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=370"></script>
+<script src="app.js?v=390"></script>
 </body>
 </html>
