@@ -25,7 +25,7 @@ function voiceUpdate(){
   $("voiceProgress").textContent=(voiceType==="ready"?"Ready ":"Go ")+(voiceSlot+1)+" of 10";
   $("voiceSlotTitle").textContent=(voiceType==="ready"?"Ready ":"Go ")+(voiceSlot+1);
   $("voiceStatus").textContent=voiceDB[voiceType][voiceSlot]?"Recording saved.":"No recording yet.";
-  $("voicePlay").disabled=!voiceDB[voiceType][voiceSlot]&&!voiceCurrentBlob;
+  $("voicePlay").disabled=!(voiceCurrentBlob||voiceDB[voiceType][voiceSlot]);
   $("voiceKeep").disabled=!voiceCurrentBlob;
   $("readyCount").textContent=voiceDB.ready.filter(Boolean).length+" / 10";
   $("goCount").textContent=voiceDB.go.filter(Boolean).length+" / 10";
@@ -33,36 +33,41 @@ function voiceUpdate(){
 function voiceSetType(t){voiceType=t;voiceSlot=0;voiceCurrentBlob=null;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===t))}
 async function voiceRecord(){
   try{
-    if(!window.isSecureContext){$("voiceStatus").textContent="Recording requires the app to be opened from its secure GitHub Pages address (https://), not a downloaded HTML file.";return}
-    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){$("voiceStatus").textContent="This browser does not support in-app audio recording.";return}
-    voiceStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    if(!window.isSecureContext){$("voiceStatus").textContent="Open the GitHub Pages HTTPS address to record.";return}
+    if(!navigator.mediaDevices?.getUserMedia){$("voiceStatus").textContent="Microphone access is unavailable in this browser.";return}
+    if(!window.MediaRecorder){$("voiceStatus").textContent="Audio recording is unavailable in this browser.";return}
+    voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
     voiceChunks=[];
     voiceCurrentBlob=null;
-    const types=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
-    const mime=types.find(t=>MediaRecorder.isTypeSupported(t))||"";
+    const mimeCandidates=["audio/webm;codecs=opus","audio/webm","audio/mp4"];
+    const mime=mimeCandidates.find(x=>MediaRecorder.isTypeSupported(x))||"";
     voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
-    voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size>0)voiceChunks.push(e.data)};
-    voiceRecorder.onerror=()=>{$("voiceStatus").textContent="The browser could not start the recording.";voiceStop()};
+    voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data)};
+    voiceRecorder.onerror=e=>{$("voiceStatus").textContent="Recording error. Please try again.";try{voiceStop()}catch(_){}};
     voiceRecorder.onstop=()=>{
-      const type=voiceRecorder.mimeType||"audio/webm";
+      const type=voiceRecorder.mimeType||mime||"audio/webm";
       voiceCurrentBlob=new Blob(voiceChunks,{type});
       voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+      voiceRecorder=null;
       $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
-      if(voiceCurrentBlob.size>0){$("voiceStatus").textContent="Recording ready — play it or keep it.";voiceUpdate()}
-      else $("voiceStatus").textContent="No audio was captured. Please try again.";
+      if(voiceCurrentBlob.size>0){
+        const kb=(voiceCurrentBlob.size/1024).toFixed(1);
+        $("voiceStatus").textContent="Captured "+kb+" KB — tap PLAY to hear it, or KEEP to save it.";
+        voiceUpdate();
+      }else $("voiceStatus").textContent="No audio data was captured. Please try again.";
     };
-    voiceRecorder.start(100);
-    $("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");$("voiceStatus").textContent="Recording… speak now.";
+    voiceRecorder.start();
+    $("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");
+    $("voiceStatus").textContent="Recording… speak now.";
   }catch(e){
-    voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+    voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
     $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
-    $("voiceStatus").textContent=e?.name==="NotAllowedError"?"Microphone permission was denied. Check Chrome/Samsung Internet microphone permissions.":"Could not start recording ("+(e?.name||"unknown error")+").";
+    $("voiceStatus").textContent=e?.name==="NotAllowedError"?"Microphone permission was denied.":"Could not start recording: "+(e?.message||e?.name||"unknown error");
   }
 }
 function voiceStop(){
-  if(voiceRecorder&&voiceRecorder.state!=="inactive"){
-    try{voiceRecorder.requestData()}catch(e){}
-    voiceRecorder.stop();
+  if(voiceRecorder&&voiceRecorder.state==="recording"){
+    try{voiceRecorder.stop()}catch(e){$("voiceStatus").textContent="Could not stop the recording.";voiceStream?.getTracks().forEach(t=>t.stop())}
   }else if(voiceStream){
     voiceStream.getTracks().forEach(t=>t.stop());voiceStream=null;
   }
@@ -231,6 +236,5 @@ voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-bindReadyGo();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=172").catch(()=>{});
 })();
