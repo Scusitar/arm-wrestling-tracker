@@ -35,6 +35,41 @@ $("trainingForm").addEventListener("submit",e=>{e.preventDefault();let t={id:edi
 function rec(ms){let w=ms.filter(m=>m.result==="Win").length;return[w,ms.length-w]}
 function techniqueStats(ms){let mine={},against={};const one=(r)=>{if(r.myTech&&r.myTech!=="Not recorded"){mine[r.myTech]??={w:0,l:0};r.result==="Win"?mine[r.myTech].w++:mine[r.myTech].l++}if(r.oppTech&&r.oppTech!=="Not recorded"){against[r.oppTech]??={w:0,l:0};r.result==="Win"?against[r.oppTech].l++:against[r.oppTech].w++}};ms.forEach(m=>m.matchType==="Supermatch"?m.rounds.forEach(one):one(m));return{mine,against}}
 
+
+function techniqueRows(matches, opponentSide=false){
+  const rows=[];
+  matches.forEach(m=>{
+    if(m.matchType==="Supermatch"){
+      (m.rounds||[]).forEach(r=>{
+        const tech=opponentSide?r.oppTech:r.myTech;
+        if(tech&&tech!=="Not recorded") rows.push({tech,win:r.result==="Win"});
+      });
+    }else{
+      const tech=opponentSide?m.oppTech:m.myTech;
+      if(tech&&tech!=="Not recorded") rows.push({tech,win:m.result==="Win"});
+    }
+  });
+  const map={};
+  rows.forEach(r=>{
+    if(!map[r.tech]) map[r.tech]={used:0,wins:0};
+    map[r.tech].used++;
+    if(r.win) map[r.tech].wins++;
+  });
+  return Object.entries(map).map(([tech,v])=>({
+    tech,used:v.used,wins:v.wins,losses:v.used-v.wins,pct:v.wins/v.used*100
+  })).sort((a,b)=>b.used-a.used||b.pct-a.pct);
+}
+function renderTechniqueTable(id, rows){
+  const el=$(id);
+  if(!el)return;
+  if(!rows.length){el.innerHTML='<p class="muted">No technique data recorded yet.</p>';return}
+  el.innerHTML=`<table class="tech-table"><thead><tr><th>Technique</th><th>Used</th><th>Wins</th><th>Losses</th><th>Win %</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.tech)}</b></td><td>${r.used}</td><td>${r.wins}</td><td>${r.losses}</td><td>${r.pct.toFixed(0)}%</td></tr>`).join("")}</tbody></table>`;
+}
+function renderTechniqueBreakdown(){
+  const matches=scope==="All"?state.matches:state.matches.filter(m=>m.matchType===scope);
+  renderTechniqueTable("myTechniqueTable",techniqueRows(matches,false));
+  renderTechniqueTable("oppTechniqueTable",techniqueRows(matches,true));
+}
 function renderTechniqueAnalytics(){
   const matches=scope==="All"?state.matches:state.matches.filter(m=>m.matchType===scope);
   const mine=[],opp=[];
@@ -68,7 +103,7 @@ function renderTechniqueAnalytics(){
   set("bestAgainstOppTech",bestAgainst?bestAgainst.tech:"Not enough data",bestAgainst?`Your win rate · ${bestAgainst.pct.toFixed(0)}% · ${bestAgainst.w}/${bestAgainst.n}`:"Need 3+ uses");
   set("worstAgainstOppTech",toughest?toughest.tech:"Not enough data",toughest?`Your win rate · ${toughest.pct.toFixed(0)}% · ${toughest.w}/${toughest.n}`:"Need 3+ uses");
 }
-function renderDashboard(){let t=rec(state.matches.filter(m=>m.matchType==="Tournament")),s=rec(state.matches.filter(m=>m.matchType==="Supermatch")),p=rec(state.matches.filter(m=>m.matchType==="Practice"));$("tourRecord").textContent=t.join("–");$("superRecord").textContent=s.join("–");$("practiceRecord").textContent=p.join("–");$("trainingCount").textContent=state.training.length;let ms=state.matches.filter(m=>m.matchType===scope),st=techniqueStats(ms),all=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})),fav=all.sort((a,b)=>b.n-a.n)[0],good=all.filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0],bad=all.filter(x=>x.n>=3).sort((a,b)=>a.w/a.n-b.w/b.n)[0],opp=Object.entries(st.against).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];$("myStats").innerHTML=`<div class="two"><div class="rec"><b>Favorite technique</b><br>${fav?esc(fav.k):"Not enough data"}</div><div class="rec"><b>Most successful</b><br>${good?esc(good.k)+" · "+Math.round(good.w/good.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Least successful</b><br>${bad?esc(bad.k)+" · "+Math.round(bad.w/bad.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Best opponent technique against you</b><br>${opp?esc(opp.k)+" · opponents win "+Math.round(opp.w/opp.n*100)+"%":"Need 3+ attempts"}</div></div>`;$("recent").innerHTML=state.matches.slice(0,5).map(m=>`<div class="entry"><div class="row"><b>${esc(m.opponent)}</b><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} arm · strap ${esc(m.strap)}${m.matchType==="Supermatch"?" · "+m.rounds.length+" rounds":""}</div></div>`).join("")||'<p class="muted">No matches yet.</p>'renderTechniqueAnalytics();}
+function renderDashboard(){let t=rec(state.matches.filter(m=>m.matchType==="Tournament")),s=rec(state.matches.filter(m=>m.matchType==="Supermatch")),p=rec(state.matches.filter(m=>m.matchType==="Practice"));$("tourRecord").textContent=t.join("–");$("superRecord").textContent=s.join("–");$("practiceRecord").textContent=p.join("–");$("trainingCount").textContent=state.training.length;let ms=state.matches.filter(m=>m.matchType===scope),st=techniqueStats(ms),all=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})),fav=all.sort((a,b)=>b.n-a.n)[0],good=all.filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0],bad=all.filter(x=>x.n>=3).sort((a,b)=>a.w/a.n-b.w/b.n)[0],opp=Object.entries(st.against).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];$("myStats").innerHTML=`<div class="two"><div class="rec"><b>Favorite technique</b><br>${fav?esc(fav.k):"Not enough data"}</div><div class="rec"><b>Most successful</b><br>${good?esc(good.k)+" · "+Math.round(good.w/good.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Least successful</b><br>${bad?esc(bad.k)+" · "+Math.round(bad.w/bad.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Best opponent technique against you</b><br>${opp?esc(opp.k)+" · opponents win "+Math.round(opp.w/opp.n*100)+"%":"Need 3+ attempts"}</div></div>`;$("recent").innerHTML=state.matches.slice(0,5).map(m=>`<div class="entry"><div class="row"><b>${esc(m.opponent)}</b><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} arm · strap ${esc(m.strap)}${m.matchType==="Supermatch"?" · "+m.rounds.length+" rounds":""}</div></div>`).join("")||'<p class="muted">No matches yet.</p>'renderTechniqueAnalytics();renderTechniqueBreakdown();}
 function renderHistory(){$("historyList").innerHTML=state.matches.map(m=>`<div class="entry"><div class="row"><div><b>${esc(m.opponent)}</b><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} · table side when facing head referee: ${esc(m.side)}${m.matchType==="Supermatch"?" · "+m.rounds.length+" rounds · strap by round":" · strap "+esc(m.strap||"No")}</div></div><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div>${m.comments?`<div style="margin-top:7px">${esc(m.comments)}</div>`:""}<div class="entry-actions"><button type="button" data-edit-match="${m.id}">Edit</button><button type="button" data-delete-match="${m.id}">Delete</button></div></div>`).join("")||'<p class="muted">No matches yet.</p>';document.querySelectorAll("[data-edit-match]").forEach(b=>b.addEventListener("click",()=>loadMatchForEdit(Number(b.dataset.editMatch))));document.querySelectorAll("[data-delete-match]").forEach(b=>b.addEventListener("click",()=>deleteMatch(Number(b.dataset.deleteMatch))))}
 
 function renderTraining(){$("trainingList").innerHTML=state.training.slice(0,20).map(t=>`<div class="entry"><b>${esc(t.category)}</b><div class="muted">${esc(t.arm)} · ${esc(t.sets)} sets × ${esc(t.reps)} reps · ${esc(t.intensity)} · ${esc(t.quality)}</div>${t.comments?`<div style="margin-top:7px">${esc(t.comments)}</div>`:""}<div class="entry-actions"><button type="button" data-edit-training="${t.id}">Edit</button><button type="button" data-delete-training="${t.id}">Delete</button></div></div>`).join("")||'<p class="muted">No training logs yet.</p>';document.querySelectorAll("[data-edit-training]").forEach(b=>b.addEventListener("click",()=>loadTrainingForEdit(Number(b.dataset.editTraining))));document.querySelectorAll("[data-delete-training]").forEach(b=>b.addEventListener("click",()=>deleteTraining(Number(b.dataset.deleteTraining))))}

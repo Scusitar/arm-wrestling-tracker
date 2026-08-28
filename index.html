@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v1.6</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v1.7</b></p>
   </div>
 </header>
 
@@ -57,6 +57,14 @@
       <div class="rec"><b>🛡️ Best against opponents</b><br><span id="bestAgainstOppTech">Not enough data</span><div class="muted" id="bestAgainstOppTechMeta"></div></div>
       <div class="rec"><b>⚠️ Toughest opponent technique</b><br><span id="worstAgainstOppTech">Not enough data</span><div class="muted" id="worstAgainstOppTechMeta"></div></div>
     </div>
+  </article>
+  <article class="card">
+    <h2>Technique Breakdown</h2>
+    <p class="muted">Detailed results for the selected match type. Supermatch techniques are counted by round.</p>
+    <h3>Your Techniques</h3>
+    <div id="myTechniqueTable" class="table-wrap"></div>
+    <h3>Opponent Techniques Against You</h3>
+    <div id="oppTechniqueTable" class="table-wrap"></div>
   </article>
   <article class="card">
     <div class="row"><h2>Recent matches</h2><button class="primary" id="dashNewMatch">+ Match</button></div>
