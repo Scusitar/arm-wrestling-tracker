@@ -1,3 +1,4 @@
+/* Arm Wrestling Tracker — v3.41 clean build */
 (()=>{"use strict";
 const KEY="armwrestle-pwa-v1";
 let state={matches:[],training:[],opponents:[]};
@@ -198,7 +199,6 @@ function rgBeep(){
   }catch(e){}
 }
 let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[],rgVoice=null,rgLastVoice={ready:-1,go:-1},rgPhase="idle",rgCycleToken=0;
-let reactionMethod="tap";
 function rgLoadVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return true}catch(e){return false}}
 if("speechSynthesis" in window){window.speechSynthesis.addEventListener("voiceschanged",rgLoadVoice);rgLoadVoice()}
 function rgInitVoice(){try{if(!("speechSynthesis" in window))return false;rgLoadVoice();window.speechSynthesis.cancel();return true}catch(e){return false}}
@@ -237,31 +237,38 @@ function rgClear(){
 
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";$("rgInstruction").textContent="GET READY…";rgSetLights(true,false);
-  rgPlayClip("ready",null,()=>{
+  rgPhase="ready";
+  $("rgInstruction").textContent="READY";
+  rgSetLights(true,false);
+  rgPlayClip("ready",null,null,token);
+  rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
+    rgPhase="go";
+    rgGoAt=performance.now();
+    $("rgInstruction").textContent="GO";
+    rgSetLights(false,true);
+    rgPlayClip("go",null,null,token);
     rgTimer=setTimeout(()=>{
-      if(!rgRunning||token!==rgCycleToken)return;
-      rgPhase="go";rgGoAt=performance.now();
-      $("rgInstruction").textContent="GO!";rgSetLights(false,true);
-      // Voice is optional feedback only; it never controls game state.
-      rgPlayClip("go",null,null,token);
-      $("reactionTap").disabled=false;
-      $("reactionTap").classList.remove("rg-start","rg-wait");
-      $("reactionTap").classList.add("rg-go");
-      $("reactionTap").textContent="TAP TO STOP TIMER";
-    },tpReadyGoDelay());
-  },token);
+      if(rgRunning&&token===rgCycleToken)rgScheduleTable(token);
+    },tpRoundDelay());
+  },tpReadyGoDelay());
 }
 
+function tpRoundDelay(){
+  const min=Math.max(1,Number(tpTiming.roundMin)||3.5);
+  const max=Math.max(min,Number(tpTiming.roundMax)||5.5);
+  return (min+Math.random()*(max-min))*1000;
+}
 function rgStartTable(){
   rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
-  $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
-  $("reactionTap").disabled=true;$("reactionTap").textContent="WAITING FOR GO";
+  $("rgInstruction").textContent="READY";
+  $("rgStart").disabled=true;$("rgStop").disabled=false;
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
 
-function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
+function rgStopTable(){
+  rgClear();$("rgInstruction").textContent="Press START when you're ready.";
+}
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go"||!rgGoAt)return;
   rgReactionTimes.push(Math.max(0,t));rgPhase="result";rgGoAt=0;
@@ -518,10 +525,10 @@ function bindReadyGo(){
   bindPenaltyButtons();
   tpBindTiming();
 }
-try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){console.error("Tracker startup error:",e)}
+try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){}
 voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=172").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=760").catch(()=>{});
 })();
