@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=175">
+<link rel="stylesheet" href="styles.css?v=176">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.23</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.24</b></p>
   </div>
 </header>
 
@@ -97,20 +97,7 @@
       <label>Table side when facing head referee</label>
       <div class="segmented" id="tableSide"><button type="button" data-value="Left" class="selected">Left</button><button type="button" data-value="Right">Right</button></div>
 
-      <div class="two">
-        <label>Your weight<select id="myWeight"></select></label>
-        <label>Opponent weight<select id="oppWeight"></select></label>
-      </div>
-      <div class="two">
-        <label>Your height<select id="myHeight"></select></label>
-        <label>Opponent height<select id="oppHeight"></select></label>
-      </div>
 
-      <label>Weight class<select id="weightClass">
-        <option>Not recorded</option><option>130 lb</option><option>150 lb</option><option>165 lb</option>
-        <option>176 lb</option><option>198 lb</option><option>220 lb</option><option>242 lb</option>
-        <option>242+ lb</option><option>Open Weight</option><option>Other</option>
-      </select></label>
 
       <div class="two match-penalties">
         <div>
@@ -143,11 +130,37 @@
           <button type="button" data-value="Even">Even</button>
           <button type="button" data-value="Unclear">Unclear</button>
         </div>
-        <div class="two">
-          <label>YOUR TECHNIQUE<select id="myTech"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label>
-          <label>OPPONENT'S TECHNIQUE<select id="oppTech"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label>
+        <div class="two technique-buttons">
+          <div>
+            <label>YOUR TECHNIQUE</label>
+            <div class="segmented four" id="myTech">
+              <button type="button" data-value="Not recorded" class="selected">Not recorded</button>
+              <button type="button" data-value="Toproll">Toproll</button>
+              <button type="button" data-value="Hook">Hook</button>
+              <button type="button" data-value="Press">Press</button>
+              <button type="button" data-value="King's Move">King's Move</button>
+              <button type="button" data-value="Other">Other</button>
+            </div>
+          </div>
+          <div>
+            <label>OPPONENT'S TECHNIQUE</label>
+            <div class="segmented four" id="oppTech">
+              <button type="button" data-value="Not recorded" class="selected">Not recorded</button>
+              <button type="button" data-value="Toproll">Toproll</button>
+              <button type="button" data-value="Hook">Hook</button>
+              <button type="button" data-value="Press">Press</button>
+              <button type="button" data-value="King's Move">King's Move</button>
+              <button type="button" data-value="Other">Other</button>
+            </div>
+          </div>
         </div>
-        <label>Match length<select id="length"><option>Not recorded</option><option>Under 5 seconds</option><option>5–30 seconds</option><option>Over 30 seconds</option></select></label>
+        <label>Match length</label>
+        <div class="segmented four" id="length">
+          <button type="button" data-value="Not recorded" class="selected">Not recorded</button>
+          <button type="button" data-value="Under 5 seconds">Under 5 sec</button>
+          <button type="button" data-value="5–30 seconds">5–30 sec</button>
+          <button type="button" data-value="Over 30 seconds">Over 30 sec</button>
+        </div>
       </div>
 
       <div id="superFields" class="hidden">
@@ -155,6 +168,21 @@
         <div id="rounds"></div>
 <button type="button" id="addRound">+ Add Round</button>
       </div>
+
+      <div class="two">
+        <label>Your weight<select id="myWeight"></select></label>
+        <label>Opponent weight<select id="oppWeight"></select></label>
+      </div>
+      <div class="two">
+        <label>Your height<select id="myHeight"></select></label>
+        <label>Opponent height<select id="oppHeight"></select></label>
+      </div>
+
+      <label>Weight class<select id="weightClass">
+        <option>Not recorded</option><option>130 lb</option><option>150 lb</option><option>165 lb</option>
+        <option>176 lb</option><option>198 lb</option><option>220 lb</option><option>242 lb</option>
+        <option>242+ lb</option><option>Open Weight</option><option>Other</option>
+      </select></label>
 
       <label>Additional comments<textarea id="comments" rows="4" placeholder="Anything unusual or worth remembering"></textarea></label>
       <button class="primary full" type="submit">SAVE MATCH</button>
@@ -311,6 +339,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=530"></script>
+<script src="app.js?v=540"></script>
 </body>
 </html>

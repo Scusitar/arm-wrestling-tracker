@@ -774,3 +774,9 @@ option{background:#0b121a !important;color:#fff !important}
   box-shadow:0 0 0 2px rgba(59,156,255,.2),0 4px 12px rgba(0,0,0,.28) !important;
 }
 .penalty-btn:active{transform:translateY(1px)}
+
+/* v3.24 Add Match layout */
+.technique-buttons{align-items:start}
+#myTech,#oppTech{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+#myTech button,#oppTech button{min-height:42px}
+#length{margin-bottom:4px}
