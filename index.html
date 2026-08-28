@@ -13,14 +13,14 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v1.7.2</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v1.8</b></p>
   </div>
 </header>
 
 <nav class="tabs" aria-label="Main navigation">
   <button data-page="dashboard" class="active">Dashboard</button>
   <button data-page="match">+ Match</button>
-  <button data-page="training">Training</button>
+  <button data-page="training">Training</button><button data-page="readygo">Ready–Go</button>
   <button data-page="history">History</button>
   <button data-page="opponents">Opponents</button><button id="refreshApp" type="button">Refresh App</button>
 </nav>
@@ -168,6 +168,43 @@
   <article class="card"><h2>Recent training</h2><div id="trainingList"></div></article>
 </section>
 
+<section id="readygo" class="page">
+  <article class="card">
+    <h2>Ready–Go Training</h2>
+    <p class="muted">Practice starts without changing your match statistics.</p>
+    <div class="segmented" id="readyGoMode">
+      <button type="button" data-value="table" class="selected">Table Practice</button>
+      <button type="button" data-value="reaction">Reaction Game</button>
+    </div>
+
+    <div id="tableReadyGo">
+      <h3>Table Practice</h3>
+      <p id="rgInstruction" class="big-stat" aria-live="polite">Press START when you're ready.</p>
+      <div class="row">
+        <button type="button" class="primary" id="rgStart">START</button>
+        <button type="button" id="rgStop" disabled>STOP</button>
+      </div>
+      <p class="muted">Random pauses between Ready and Go help prevent anticipating the start.</p>
+    </div>
+
+    <div id="reactionReadyGo" class="hidden">
+      <h3>Reaction Game</h3>
+      <p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
+      <button type="button" class="primary full" id="reactionTap" disabled>WAIT FOR GO</button>
+      <div class="two">
+        <div class="rec"><b>Best</b><br><span id="reactionBest">—</span></div>
+        <div class="rec"><b>Average</b><br><span id="reactionAvg">—</span></div>
+        <div class="rec"><b>Attempts</b><br><span id="reactionAttempts">0</span></div>
+        <div class="rec"><b>Last</b><br><span id="reactionLast">—</span></div>
+      </div>
+      <p id="falseStart" class="muted" aria-live="polite"></p>
+      <div class="row">
+        <button type="button" id="reactionStart" class="primary">START</button>
+        <button type="button" id="reactionStop" disabled>STOP</button>
+      </div>
+    </div>
+  </article>
+</section>
 <section id="history" class="page"><article class="card"><h2>History</h2><div id="historyList"></div></article></section>
 <section id="opponents" class="page">
   <article class="card"><h2>Opponent Profiles</h2><p class="muted">Practice, tournament and supermatch stats remain separate.</p><div id="profiles"></div></article>
