@@ -726,3 +726,8 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-controls + .reaction-settings{margin-top:16px}
 .voice-speed-setting{margin-top:12px;padding-top:12px;border-top:1px solid #2b3b4b}
 .voice-speed-setting .timing-help{display:block;margin-top:4px;font-size:.85rem}
+
+/* v3.19: reaction tap placement and whole Ready-Go speed */
+.reaction-tap-button + .reaction-settings{margin-top:16px}
+.round-speed-setting{border-top:1px solid #2b3b4b;padding-top:12px;margin-top:12px}
+.round-speed-setting .timing-help{display:block;margin-top:4px;font-size:.85rem}

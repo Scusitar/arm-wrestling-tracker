@@ -174,10 +174,10 @@ function rgPlayClip(kind,onStart,onEnd,token){
   const data=rgPickVoice(kind);
   if(!data){
     if(!("speechSynthesis" in window)){if(onEnd)onEnd();return}
-    rgLoadVoice();const u=new SpeechSynthesisUtterance(kind==="ready"?"Ready":"Go");if(rgVoice)u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=(rgMode==="table"?Math.max(.1,Math.min(2,tpVoiceSpeed*.95)):.95);u.pitch=1;u.volume=1;
+    rgLoadVoice();const u=new SpeechSynthesisUtterance(kind==="ready"?"Ready":"Go");if(rgVoice)u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=(rgMode==="table"?Math.max(.1,Math.min(2,tpVoiceSpeed*tpRoundSpeed*.95)):.95);u.pitch=1;u.volume=1;
     u.onstart=()=>{if(token===rgCycleToken&&onStart)onStart()};u.onend=()=>{if(token===rgCycleToken&&onEnd)onEnd()};u.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};window.speechSynthesis.speak(u);return;
   }
-  const a=new Audio(data);a.preload="auto";a.playbackRate=(rgMode==="table"?tpVoiceSpeed:1.10);
+  const a=new Audio(data);a.preload="auto";a.playbackRate=(rgMode==="table"?tpVoiceSpeed*tpRoundSpeed:1.10);
   a.onplay=()=>{if(token===rgCycleToken&&onStart)onStart()};
   a.onended=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
   a.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
@@ -216,6 +216,19 @@ function rgStartTable(){
 }
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
+const tpRoundSpeedDefault=1.00;
+let tpRoundSpeed=tpRoundSpeedDefault;
+function tpUpdateRoundSpeedUI(){
+ const e=$("tpRoundSpeed"),o=$("tpRoundSpeedValue");
+ if(e)e.value=tpRoundSpeed.toFixed(2);
+ if(o)o.textContent=tpRoundSpeed.toFixed(2)+"×";
+}
+function tpBindRoundSpeed(){
+ const e=$("tpRoundSpeed");
+ if(e)e.addEventListener("input",()=>{tpRoundSpeed=Math.max(.75,Math.min(1.50,parseFloat(e.value)||tpRoundSpeedDefault));tpUpdateRoundSpeedUI()});
+ tpUpdateRoundSpeedUI();
+}
+
 const tpVoiceSpeedDefault=1.00;
 let tpVoiceSpeed=tpVoiceSpeedDefault;
 function tpUpdateVoiceSpeedUI(){
@@ -250,12 +263,29 @@ function tpBindTiming(){
    const e=$(id);if(e)e.addEventListener("input",()=>{tpTiming[key]=parseFloat(e.value);tpClampTiming();tpUpdateTimingUI()});
  });
  const reset=$("tpTimingReset");
- if(reset)reset.addEventListener("click",()=>{tpTiming={...tpTimingDefault};tpVoiceSpeed=tpVoiceSpeedDefault;tpUpdateTimingUI();tpUpdateVoiceSpeedUI()});
+ if(reset)reset.addEventListener("click",()=>{tpTiming={...tpTimingDefault};tpVoiceSpeed=tpVoiceSpeedDefault;tpRoundSpeed=tpRoundSpeedDefault;tpUpdateTimingUI();tpUpdateRoundSpeedUI();tpUpdateVoiceSpeedUI()});
  tpUpdateTimingUI();
+ tpBindRoundSpeed();
  tpBindVoiceSpeed();
 }
-function tpReadyGoDelay(){return rgTimingDelay(tpTiming.readyMin,tpTiming.readyMax)}
-function tpNextInterval(){return rgTimingDelay(tpTiming.roundMin,tpTiming.roundMax)}
+function tpReadTiming(){
+ const read=(id,fallback)=>{const e=$(id),v=e?parseFloat(e.value):NaN;return Number.isFinite(v)?v:fallback};
+ let readyMin=read("tpReadyMin",tpTimingDefault.readyMin);
+ let readyMax=read("tpReadyMax",tpTimingDefault.readyMax);
+ let roundMin=read("tpRoundMin",tpTimingDefault.roundMin);
+ let roundMax=read("tpRoundMax",tpTimingDefault.roundMax);
+ if(readyMax<readyMin)[readyMin,readyMax]=[readyMax,readyMin];
+ if(roundMax<roundMin)[roundMin,roundMax]=[roundMax,roundMin];
+ return {readyMin,readyMax,roundMin,roundMax};
+}
+function tpReadyGoDelay(){
+ const t=tpReadTiming();
+ return rgTimingDelay(t.readyMin/tpRoundSpeed,t.readyMax/tpRoundSpeed);
+}
+function tpNextInterval(){
+ const t=tpReadTiming();
+ return rgTimingDelay(t.roundMin/tpRoundSpeed,t.roundMax/tpRoundSpeed);
+}
 
 const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
 let rgTiming={...rgTimingDefault};
