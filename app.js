@@ -237,21 +237,18 @@ function rgClear(){
 
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";
-  $("rgInstruction").textContent="READY";
-  rgSetLights(true,false);
-  rgPlayClip("ready",null,null,token);
-  rgTimer=setTimeout(()=>{
+  rgPhase="ready";$("rgInstruction").textContent="";
+  rgPlayClip("ready",null,()=>{
     if(!rgRunning||token!==rgCycleToken)return;
-    rgPhase="go";
-    rgGoAt=performance.now();
-    $("rgInstruction").textContent="GO";
-    rgSetLights(false,true);
-    rgPlayClip("go",null,null,token);
     rgTimer=setTimeout(()=>{
-      if(rgRunning&&token===rgCycleToken)rgScheduleTable(token);
-    },tpRoundDelay());
-  },tpReadyGoDelay());
+      if(!rgRunning||token!==rgCycleToken)return;
+      rgPhase="go";$("rgInstruction").textContent="";
+      rgPlayClip("go",null,()=>{
+        if(!rgRunning||token!==rgCycleToken)return;
+        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),tpNextInterval());
+      },token);
+    },tpReadyGoDelay());
+  },token);
 }
 
 function tpRoundDelay(){
@@ -261,14 +258,11 @@ function tpRoundDelay(){
 }
 function rgStartTable(){
   rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
-  $("rgInstruction").textContent="READY";
-  $("rgStart").disabled=true;$("rgStop").disabled=false;
+  $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
 
-function rgStopTable(){
-  rgClear();$("rgInstruction").textContent="Press START when you're ready.";
-}
+function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go"||!rgGoAt)return;
   rgReactionTimes.push(Math.max(0,t));rgPhase="result";rgGoAt=0;
