@@ -716,3 +716,8 @@ option{background:#0b121a !important;color:#fff !important}
 #reactionStart.reaction-start-button{background:linear-gradient(145deg,#35dc70,#11843b) !important;color:#fff !important;border:3px solid #48ea7e !important}
 #reactionStop.reaction-stop-button{background:linear-gradient(145deg,#ff5b5b,#b51f29) !important;color:#fff !important;border:3px solid #ff7070 !important}
 .tabs button,button{color:#fff !important}
+
+/* v3.17 Table Practice timing controls */
+.table-timing-settings{margin-top:16px}
+.table-timing-settings h3{margin-top:0}
+.table-timing-settings .timing-reset{width:100%;margin-top:4px}

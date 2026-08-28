@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.16</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.17</b></p>
   </div>
 </header>
 
@@ -185,7 +185,27 @@
         <button type="button" class="rg-start-button" id="rgStart">START</button>
         <button type="button" class="rg-stop-button" id="rgStop" disabled>STOP</button>
       </div>
-      <p class="muted">Ready → Go pause: randomized from 0.35–1.00 seconds. Time between starts: randomized from 2.8–4.0 seconds.</p>
+
+      <div class="reaction-settings table-timing-settings" aria-label="Table Practice timing settings">
+        <h3>Timing</h3>
+        <div class="reaction-setting">
+          <label for="tpReadyMin">Ready → Go minimum <output id="tpReadyMinValue">0.30 s</output></label>
+          <input id="tpReadyMin" type="range" min="0.10" max="1.80" step="0.05" value="0.30">
+        </div>
+        <div class="reaction-setting">
+          <label for="tpReadyMax">Ready → Go maximum <output id="tpReadyMaxValue">1.00 s</output></label>
+          <input id="tpReadyMax" type="range" min="0.15" max="2.00" step="0.05" value="1.00">
+        </div>
+        <div class="reaction-setting">
+          <label for="tpRoundMin">Between-round minimum <output id="tpRoundMinValue">3.50 s</output></label>
+          <input id="tpRoundMin" type="range" min="1.00" max="8.00" step="0.10" value="3.50">
+        </div>
+        <div class="reaction-setting">
+          <label for="tpRoundMax">Between-round maximum <output id="tpRoundMaxValue">5.50 s</output></label>
+          <input id="tpRoundMax" type="range" min="1.10" max="10.00" step="0.10" value="5.50">
+        </div>
+        <button type="button" id="tpTimingReset" class="timing-reset">Reset timing</button>
+      </div>
     </div>
 
     <div id="reactionReadyGo" class="hidden">
@@ -251,6 +271,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=460"></script>
+<script src="app.js?v=470"></script>
 </body>
 </html>

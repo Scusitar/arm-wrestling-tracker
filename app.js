@@ -204,9 +204,9 @@ function rgScheduleTable(token){
       rgPhase="go";$("rgInstruction").textContent="";
       rgPlayClip("go",null,()=>{
         if(!rgRunning||token!==rgCycleToken)return;
-        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),rgNextInterval());
+        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),tpNextInterval());
       },token);
-    },rgReadyGoDelay());
+    },tpReadyGoDelay());
   },token);
 }
 function rgStartTable(){
@@ -216,6 +216,33 @@ function rgStartTable(){
 }
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
+const tpTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
+let tpTiming={...tpTimingDefault};
+function tpClampTiming(){
+ tpTiming.readyMin=Math.max(.10,Math.min(1.80,tpTiming.readyMin));
+ tpTiming.readyMax=Math.max(.15,Math.min(2.00,tpTiming.readyMax));
+ if(tpTiming.readyMax<tpTiming.readyMin)tpTiming.readyMax=tpTiming.readyMin;
+ tpTiming.roundMin=Math.max(1,Math.min(8,tpTiming.roundMin));
+ tpTiming.roundMax=Math.max(1.1,Math.min(10,tpTiming.roundMax));
+ if(tpTiming.roundMax<tpTiming.roundMin)tpTiming.roundMax=tpTiming.roundMin;
+}
+function tpUpdateTimingUI(){
+ tpClampTiming();
+ [["tpReadyMin","tpReadyMinValue",tpTiming.readyMin],["tpReadyMax","tpReadyMaxValue",tpTiming.readyMax],["tpRoundMin","tpRoundMinValue",tpTiming.roundMin],["tpRoundMax","tpRoundMaxValue",tpTiming.roundMax]].forEach(([id,out,val])=>{
+   const e=$(id),o=$(out);if(e)e.value=val.toFixed(2);if(o)o.textContent=val.toFixed(2)+" s";
+ });
+}
+function tpBindTiming(){
+ [["tpReadyMin","readyMin"],["tpReadyMax","readyMax"],["tpRoundMin","roundMin"],["tpRoundMax","roundMax"]].forEach(([id,key])=>{
+   const e=$(id);if(e)e.addEventListener("input",()=>{tpTiming[key]=parseFloat(e.value);tpClampTiming();tpUpdateTimingUI()});
+ });
+ const reset=$("tpTimingReset");
+ if(reset)reset.addEventListener("click",()=>{tpTiming={...tpTimingDefault};tpUpdateTimingUI()});
+ tpUpdateTimingUI();
+}
+function tpReadyGoDelay(){return rgTimingDelay(tpTiming.readyMin,tpTiming.readyMax)}
+function tpNextInterval(){return rgTimingDelay(tpTiming.roundMin,tpTiming.roundMax)}
+
 const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
 let rgTiming={...rgTimingDefault};
 function rgClampTiming(){
@@ -388,6 +415,7 @@ function bindReadyGo(){
   if(reactionStopBtn)reactionStopBtn.addEventListener("click",reactionStop);
   if(reactionButton)reactionButton.addEventListener("click",reactionTap);
   rgBindTiming();
+  tpBindTiming();
 }
 try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){console.error("Tracker startup error:",e)}
 voiceLoad();
