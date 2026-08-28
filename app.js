@@ -243,8 +243,11 @@ function reactionMotionHandler(e){
   if(rgPhase!=="go"){motionBaseline=mag;return}
   if(motionBaseline===null){motionBaseline=mag;return}
   const delta=Math.abs(mag-motionBaseline);
-  motionBaseline=motionBaseline*.9+mag*.1;
-  if(!motionTriggered && rgGoAt>0 && delta>=1.00){
+  motionBaseline=motionBaseline*.92+mag*.08;
+  const a=e.accelerationIncludingGravity||e.acceleration||{};
+  const rot=e.rotationRate||{};
+  const rotMag=Math.sqrt((rot.alpha||0)**2+(rot.beta||0)**2+(rot.gamma||0)**2);
+  if(!motionTriggered && rgGoAt>0 && (delta>=0.80||rotMag>=35)){
     motionTriggered=true;
     reactionRecord(performance.now()-rgGoAt);
   }
@@ -289,12 +292,12 @@ function rgClear(){
 }
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";$("rgInstruction").textContent="";
+  rgPhase="ready";motionBaseline=null;motionTriggered=false;$("rgInstruction").textContent="";
   rgPlayClip("ready",null,()=>{
     if(!rgRunning||token!==rgCycleToken)return;
     rgTimer=setTimeout(()=>{
       if(!rgRunning||token!==rgCycleToken)return;
-      rgPhase="go";motionBaseline=null;motionTriggered=false;$("rgInstruction").textContent="";
+      rgPhase="go";rgGoAt=performance.now();motionBaseline=null;motionTriggered=false;$("rgInstruction").textContent="";rgSetLights(false,true);
       rgPlayClip("go",null,()=>{
         if(!rgRunning||token!==rgCycleToken)return;
         rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),tpNextInterval());
@@ -304,6 +307,7 @@ function rgScheduleTable(token){
 }
 function rgStartTable(){
   rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
+  if(reactionMethod==="motion")startMotionDetection();
   $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
@@ -311,16 +315,20 @@ function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START whe
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go")return;
   rgReactionTimes.push(Math.max(0,t));
-  rgPhase="result";rgRunning=false;rgGoAt=0;
+  rgPhase="result";rgGoAt=0;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
-  if(reactionMethod==="motion")stopMotionDetection();
-  if($("reactionStart"))$("reactionStart").disabled=false;
-  if($("reactionStop"))$("reactionStop").disabled=true;
   $("reactionTap").disabled=true;
   $("reactionTap").textContent=reactionMethod==="motion"?"MOVE TO STOP":"TAP TO STOP";
   $("reactionInstruction").textContent=t.toFixed(0)+" ms";
   reactionShowBigTime(t);reactionRender();
+  // Keep the session running and automatically begin the next round.
+  const token=rgCycleToken;
+  rgTimer=setTimeout(()=>{
+    if(!rgRunning||token!==rgCycleToken)return;
+    rgScheduleTable(token);
+  },1500);
 }
+
 function reactionRender(){
  const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
  $("reactionAttempts").textContent=a.length;

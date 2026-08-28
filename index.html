@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=690">
+<link rel="stylesheet" href="styles.css?v=700">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.34</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.35</b></p>
   </div>
 </header>
 
@@ -266,13 +266,7 @@
 
 <p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
       <div class="reaction-controls">
-  <div class="reaction-method-picker">
-        <label>Reaction Method</label>
-        <div class="segmented" id="reactionMethod">
-          <button type="button" data-value="tap" class="selected" aria-pressed="true">TAP</button>
-          <button type="button" data-value="motion" aria-pressed="false">MOTION</button>
-        </div>
-      </div>
+  
       <button type="button" id="reactionStart" class="reaction-start-button">START</button>
   <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
 </div>
@@ -297,7 +291,14 @@
 <div class="reaction-setting"><label for="rgReadyMax">Between Ready and Go maximum <output id="rgReadyMaxValue">3.00 s</output></label><input id="rgReadyMax" type="range" min="1.00" max="6.00" step="0.05" value="3.00"></div>
 
 
-<button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button></div>
+<button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button>
+<div class="reaction-method-picker">
+        <label>Reaction Method</label>
+        <div class="segmented" id="reactionMethod">
+          <button type="button" data-value="tap" class="selected" aria-pressed="true">TAP</button>
+          <button type="button" data-value="motion" aria-pressed="false">MOTION</button>
+        </div>
+      </div></div>
 
       
       <p id="falseStart" class="muted" aria-live="polite"></p>
@@ -350,6 +351,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=690"></script>
+<script src="app.js?v=700"></script>
 </body>
 </html>

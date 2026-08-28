@@ -860,3 +860,12 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-big-time.show{opacity:1!important;visibility:visible!important;animation:reactionBigPop .55s cubic-bezier(.16,1.4,.3,1)!important}
 .reaction-big-time strong{font-size:clamp(110px,26vw,260px)!important;line-height:.9!important}
 #reactionStop{background:#d83a3a!important;color:#fff!important;border-color:#ff7070!important}
+
+/* v3.35: reaction method buttons below stop button */
+.reaction-controls{display:flex;flex-direction:column;align-items:center;gap:12px}
+.reaction-method-picker{order:3;width:min(420px,100%);margin:0}
+.reaction-method-picker .segmented{display:flex}
+.reaction-method-picker button{min-height:44px;font-weight:800}
+.reaction-method-picker button.selected{background:linear-gradient(145deg,#3b9cff,#1557b0)!important;color:#fff!important;border-color:#66b8ff!important;box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28)!important}
+#reactionTap{order:2}
+#reactionStart,#reactionStop{order:1}
