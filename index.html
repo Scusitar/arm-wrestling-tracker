@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=173">
+<link rel="stylesheet" href="styles.css?v=174">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.21</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.22</b></p>
   </div>
 </header>
 
@@ -112,6 +112,11 @@
         <option>242+ lb</option><option>Open Weight</option><option>Other</option>
       </select></label>
 
+      <div class="two match-penalties">
+        <label>Number of fouls<input id="matchFouls" type="number" min="0" step="1" value="0" inputmode="numeric"></label>
+        <label>Number of warnings<input id="matchWarnings" type="number" min="0" step="1" value="0" inputmode="numeric"></label>
+      </div>
+
       <div id="singleFields">
         <label>Strap</label>
         <div class="segmented" id="singleStrap"><button type="button" data-value="No" class="selected">No</button><button type="button" data-value="Yes">Yes</button></div>
@@ -134,7 +139,6 @@
       <div id="superFields" class="hidden">
         <div class="notice"><b>Supermatch</b><br>Strap is recorded separately for every round. Result, GO, techniques and length are also recorded for every round.</div>
         <div id="rounds"></div>
-        <div class="two match-penalties"><label>Fouls<input id="matchFouls" type="number" min="0" step="1" value="0"></label><label>Warnings<input id="matchWarnings" type="number" min="0" step="1" value="0"></label></div>
 <button type="button" id="addRound">+ Add Round</button>
       </div>
 
@@ -293,6 +297,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=510"></script>
+<script src="app.js?v=520"></script>
 </body>
 </html>
