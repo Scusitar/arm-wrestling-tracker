@@ -6,6 +6,7 @@ if(!Array.isArray(state.matches))state.matches=[];if(!Array.isArray(state.traini
 const $=id=>document.getElementById(id),save=()=>localStorage.setItem(KEY,JSON.stringify(state));
 const form={type:"Practice",arm:"Right",singleStrap:"No",side:"Left",result:"Win",go:"I hit first",trainingArm:"Both",quality:"Good"};
 let scope="Tournament",roundNumber=0,editingMatchId=null,editingTrainingId=null;
+function matchInt(id){const e=$(id);const n=e?parseInt(e.value,10):0;return Number.isFinite(n)&&n>=0?n:0}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
 function setGroup(id,key,value){form[key]=value;const el=$(id);if(!el)return;el.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===value))}
@@ -18,7 +19,7 @@ function deleteTraining(id){if(!confirm("Delete this training entry? This cannot
 
 
 let voiceType="ready",voiceSlot=0,voiceDB={ready:[],go:[]},voiceRecorder=null,voiceChunks=[],voiceStream=null,voiceCurrentBlob=null,voiceCurrentUrl=null;
-function voiceLoad(){try{const x=localStorage.getItem("awtVoiceLibrary");if(x)voiceDB=JSON.parse(x)||voiceDB}catch(e){}}
+function voiceLoad(){const matchFouls=matchInt("matchFouls"),matchWarnings=matchInt("matchWarnings");try{const x=localStorage.getItem("awtVoiceLibrary");if(x)voiceDB=JSON.parse(x)||voiceDB}catch(e){}}
 function voiceSave(){try{localStorage.setItem("awtVoiceLibrary",JSON.stringify(voiceDB))}catch(e){}}
 function voiceLibraryReady(){return voiceDB.ready.filter(Boolean).length>0&&voiceDB.go.filter(Boolean).length>0}
 function voiceUpdate(){
@@ -32,6 +33,53 @@ function voiceUpdate(){
   $("goCount").textContent=voiceDB.go.filter(Boolean).length+" / 10";
 }
 function voiceSetType(t){voiceType=t;voiceSlot=0;voiceCurrentBlob=null;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===t))}
+let voiceAudioCtx=null,voiceAnalyser=null,voiceWaveFrame=null,voiceWaveSource=null;
+function voiceWaveDraw(){
+  const c=$("voiceWave");if(!c||!voiceAnalyser)return;
+  const ctx=c.getContext("2d"),data=new Uint8Array(voiceAnalyser.fftSize);
+  const draw=()=>{
+    if(!voiceAnalyser)return;
+    voiceWaveFrame=requestAnimationFrame(draw);
+    const dpr=window.devicePixelRatio||1,w=Math.max(1,c.clientWidth*dpr),h=Math.max(1,c.clientHeight*dpr);
+    if(c.width!==w)c.width=w;if(c.height!==h)c.height=h;
+    ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.lineWidth=3;
+    ctx.strokeStyle=getComputedStyle(document.body).color||"#2563eb";
+    voiceAnalyser.getByteTimeDomainData(data);
+    for(let i=0;i<data.length;i++){const x=i/(data.length-1)*w,y=h/2+(data[i]-128)/128*h*.38;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+    ctx.stroke();
+  };draw();
+}
+function voiceWaveStartStream(){
+  const c=$("voiceWave");if(!c||!voiceStream)return;
+  try{
+    voiceWaveStop();
+    voiceAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(voiceAudioCtx.state==="suspended")voiceAudioCtx.resume();
+    voiceAnalyser=voiceAudioCtx.createAnalyser();voiceAnalyser.fftSize=1024;
+    voiceWaveSource=voiceAudioCtx.createMediaStreamSource(voiceStream);
+    voiceWaveSource.connect(voiceAnalyser);c.style.display="block";voiceWaveDraw();
+  }catch(e){if(c)c.style.display="none"}
+}
+function voiceWaveStartAudio(audio){
+  const c=$("voiceWave");if(!c||!audio)return;
+  try{
+    voiceWaveStop();
+    voiceAudioCtx=new(window.AudioContext||window.webkitAudioContext)();
+    if(voiceAudioCtx.state==="suspended")voiceAudioCtx.resume();
+    voiceAnalyser=voiceAudioCtx.createAnalyser();voiceAnalyser.fftSize=1024;
+    voiceWaveSource=voiceAudioCtx.createMediaElementSource(audio);
+    voiceWaveSource.connect(voiceAnalyser);voiceAnalyser.connect(voiceAudioCtx.destination);
+    c.style.display="block";voiceWaveDraw();
+  }catch(e){}
+}
+function voiceWaveStop(){
+  if(voiceWaveFrame)cancelAnimationFrame(voiceWaveFrame);voiceWaveFrame=null;
+  try{voiceWaveSource?.disconnect()}catch(e){}
+  voiceWaveSource=null;voiceAnalyser=null;
+  try{voiceAudioCtx?.close()}catch(e){}
+  voiceAudioCtx=null;
+  const c=$("voiceWave");if(c)c.style.display="none";
+}
 async function voiceRecord(){
   try{
     if(!window.isSecureContext){$("voiceStatus").textContent="Open the GitHub Pages HTTPS address to record.";return}
@@ -48,7 +96,7 @@ async function voiceRecord(){
     voiceRecorder.onstop=()=>{
       const type=voiceRecorder.mimeType||mime||"audio/webm";
       voiceCurrentBlob=new Blob(voiceChunks,{type});
-      voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+      voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
       voiceRecorder=null;
       $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
       if(voiceCurrentBlob.size>0){
@@ -58,10 +106,11 @@ async function voiceRecord(){
       }else $("voiceStatus").textContent="No audio data was captured. Please try again.";
     };
     voiceRecorder.start();
+    voiceWaveStartStream();
     $("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");
     $("voiceStatus").textContent="Recording… speak now.";
   }catch(e){
-    voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
+    voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
     $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
     $("voiceStatus").textContent=e?.name==="NotAllowedError"?"Microphone permission was denied.":"Could not start recording: "+(e?.message||e?.name||"unknown error");
   }
@@ -81,11 +130,12 @@ function voicePlay(){
     if(voicePlayback){voicePlayback.pause();voicePlayback=null}
     if(voicePlaybackUrl){URL.revokeObjectURL(voicePlaybackUrl);voicePlaybackUrl=null}
     voicePlaybackUrl=typeof data==="string"?data:URL.createObjectURL(data);
-    voicePlayback=new Audio(voicePlaybackUrl);
-    voicePlayback.onended=()=>{$("voiceStatus").textContent="Playback finished."};
-    voicePlayback.onerror=()=>{$("voiceStatus").textContent="Could not play this recording."};
-    voicePlayback.play().then(()=>{$("voiceStatus").textContent="Playing…"}).catch(()=>{$("voiceStatus").textContent="Tap PLAY again to allow playback."});
-  }catch(e){$("voiceStatus").textContent="Could not play this recording."}
+    voicePlayback=new Audio(voicePlaybackUrl);voicePlayback.preload="auto";
+    voicePlayback.onplay=()=>{voiceWaveStartAudio(voicePlayback);$("voiceStatus").textContent="Playing… waveform shows playback."};
+    voicePlayback.onended=()=>{voiceWaveStop();$("voiceStatus").textContent="Playback finished."};
+    voicePlayback.onerror=()=>{voiceWaveStop();$("voiceStatus").textContent="Could not play this recording."};
+    voicePlayback.play().catch(()=>{$("voiceStatus").textContent="Tap PLAY again to allow playback."});
+  }catch(e){voiceWaveStop();$("voiceStatus").textContent="Could not play this recording."}
 }
 async function voiceKeep(){
   if(!voiceCurrentBlob)return;
@@ -130,13 +180,13 @@ function rgSay(text,onStart,onEnd){
   }catch(e){if(onEnd)onEnd();return false}
 }
 function rgNextInterval(){return 2800+Math.random()*1200}
-function rgReadyGoDelay(){return 200+Math.random()*400}
+function rgReadyGoDelay(){return 100+Math.random()*200}
 function rgClear(){if(rgTimer){clearTimeout(rgTimer);rgTimer=null}rgRunning=false;rgGoAt=0;if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;if($("reactionStop"))$("reactionStop").disabled=true;if($("reactionTap")){$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="START"}}
 function rgSchedule(){if(!rgRunning)return;$("rgInstruction").textContent="READY";rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("rgInstruction").textContent="GO";rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(rgSchedule,rgNextInterval())})},rgReadyGoDelay())})}
 function rgStartTable(){rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;$("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;rgTimer=setTimeout(rgSchedule,100)}
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
-function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");rgGoAt=0;rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())})},rgReadyGoDelay())})}
+function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");rgGoAt=0;rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");/* Reaction clock starts exactly when the Go audio begins (G/onplay). */rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())})},rgReadyGoDelay())})}
 function reactionStart(){rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";rgTimer=setTimeout(reactionCycle,100)}
 function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO."}
 function reactionTap(){if(!rgRunning)return;if(!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();setTimeout(()=>{if(rgRunning)reactionCycle()},500)}

@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v2.8</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.3</b></p>
   </div>
 </header>
 
@@ -134,7 +134,8 @@
       <div id="superFields" class="hidden">
         <div class="notice"><b>Supermatch</b><br>Strap is recorded separately for every round. Result, GO, techniques and length are also recorded for every round.</div>
         <div id="rounds"></div>
-        <button type="button" id="addRound">+ Add Round</button>
+        <div class="two match-penalties"><label>Fouls<input id="matchFouls" type="number" min="0" step="1" value="0"></label><label>Warnings<input id="matchWarnings" type="number" min="0" step="1" value="0"></label></div>
+<button type="button" id="addRound">+ Add Round</button>
       </div>
 
       <label>Additional comments<textarea id="comments" rows="4" placeholder="Anything unusual or worth remembering"></textarea></label>
@@ -213,13 +214,13 @@
     <div class="voice-progress"><b id="voiceProgress">Ready 1 of 10</b></div>
     <div class="voice-card">
       <h3 id="voiceSlotTitle">Ready 1</h3>
-      <p id="voiceStatus" class="muted">No recording yet.</p>
+      <p id="voiceStatus" class="muted">No recording yet.</p><canvas id="voiceWave" class="voice-wave" aria-label="Live recording waveform"></canvas>
       <div class="voice-buttons">
         <button type="button" id="voiceRecord" class="voice-record">● RECORD</button>
         <button type="button" id="voicePlay" disabled>▶ PLAY</button>
         <button type="button" id="voiceKeep" disabled>✓ KEEP</button>
       </div>
-      <p class="muted">Say the command naturally and clearly. After STOP, the app will show the captured audio size. You can re-record any slot.</p>
+      <p class="muted">Say the command naturally and clearly. After STOP, the app will show the captured audio size. The waveform also appears during playback.</p>
     </div>
     <div class="two">
       <div class="rec"><b>Ready recordings</b><br><span id="readyCount">0 / 10</span></div>
@@ -234,6 +235,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=280"></script>
+<script src="app.js?v=330"></script>
 </body>
 </html>
