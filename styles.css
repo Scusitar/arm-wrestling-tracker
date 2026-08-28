@@ -877,3 +877,10 @@ option{background:#0b121a !important;color:#fff !important}
 #reactionStart,#reactionStop{order:1}
 .reaction-method-picker button{min-height:44px;font-weight:800}
 .reaction-method-picker button.selected{background:linear-gradient(145deg,#3b9cff,#1557b0)!important;color:#fff!important;border-color:#66b8ff!important;box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28)!important}
+
+.reaction-big-time{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;pointer-events:none;background:rgba(3,8,13,.72);backdrop-filter:blur(3px);opacity:0;visibility:hidden;transform:scale(.72)}
+.reaction-big-time.show{opacity:1;visibility:visible;transform:scale(1);animation:reactionBigPop .55s cubic-bezier(.16,1.4,.3,1)}
+.reaction-big-time .reaction-big-label{font-size:clamp(18px,4vw,30px);font-weight:900;letter-spacing:.18em;color:#b9c7d5;margin-bottom:8px;text-transform:uppercase}
+.reaction-big-time strong{font-size:clamp(100px,25vw,250px);line-height:.9;font-weight:1000;color:#fff;text-shadow:0 0 25px rgba(72,234,126,.8),0 0 70px rgba(59,156,255,.55)}
+.reaction-big-time small{font-size:.32em;font-weight:900;color:#b9c7d5}
+@keyframes reactionBigPop{0%{opacity:0;transform:scale(.35)}45%{opacity:1;transform:scale(1.16)}70%{transform:scale(.94)}100%{opacity:1;transform:scale(1)}}

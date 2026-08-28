@@ -216,45 +216,52 @@ function setReactionMethod(v){
 }
 function motionMagnitude(e){
   const a=e.accelerationIncludingGravity||e.acceleration;
-  if(!a)return 0;
-  return Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+  if(!a)return null;
+  const x=Number(a.x)||0,y=Number(a.y)||0,z=Number(a.z)||0;
+  return Math.sqrt(x*x+y*y+z*z);
 }
+let motionListening=false,motionGoBaseline=null,motionOrientationBaseline=null;
 function startMotionDetection(){
+  if(motionListening)return;
+  motionListening=true;
   window.addEventListener("devicemotion",reactionMotionHandler,{passive:true});
+  window.addEventListener("deviceorientation",reactionOrientationHandler,{passive:true});
 }
 function requestMotionPermission(){
-  if(!("DeviceMotionEvent" in window)){
-    const f=$("falseStart");if(f)f.textContent="Motion sensors are not available on this device.";
-    return;
-  }
+  const start=()=>startMotionDetection();
   try{
-    if(typeof DeviceMotionEvent.requestPermission==="function"){
-      DeviceMotionEvent.requestPermission().then(r=>{
-        if(r==="granted")startMotionDetection();
-        else {const f=$("falseStart");if(f)f.textContent="Motion permission was not granted."}
-      }).catch(()=>{const f=$("falseStart");if(f)f.textContent="Motion permission was not granted."});
-    }else startMotionDetection();
-  }catch(e){startMotionDetection()}
+    const req=[];
+    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function")req.push(DeviceMotionEvent.requestPermission());
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function")req.push(DeviceOrientationEvent.requestPermission());
+    if(req.length)Promise.all(req).then(()=>start()).catch(()=>start()); else start();
+  }catch(e){start()}
 }
 function reactionMotionHandler(e){
-  if(reactionMethod!=="motion"||!rgRunning)return;
-  const mag=motionMagnitude(e);
-  if(!Number.isFinite(mag))return;
-  if(rgPhase!=="go"){motionBaseline=mag;return}
-  if(motionBaseline===null){motionBaseline=mag;return}
-  const delta=Math.abs(mag-motionBaseline);
-  motionBaseline=motionBaseline*.97+mag*.03;
-  const a=e.accelerationIncludingGravity||e.acceleration||{};
+  if(reactionMethod!=="motion"||!rgRunning||rgPhase!=="go"||!rgGoAt)return;
+  const mag=motionMagnitude(e); if(mag===null)return;
+  const now=performance.now();
+  if(motionGoBaseline===null)motionGoBaseline={mag,at:now};
+  const delta=Math.abs(mag-motionGoBaseline.mag);
+  const rate=now-motionGoBaseline.at;
   const rot=e.rotationRate||{};
-  const rotMag=Math.sqrt((rot.alpha||0)**2+(rot.beta||0)**2+(rot.gamma||0)**2);
-  if(!motionTriggered && rgGoAt>0 && (delta>=0.45||rotMag>=18)){
-    motionTriggered=true;
-    reactionRecord(performance.now()-rgGoAt);
+  const rotMag=Math.sqrt((Number(rot.alpha)||0)**2+(Number(rot.beta)||0)**2+(Number(rot.gamma)||0)**2);
+  if(!motionTriggered&&(delta>=0.50||(delta>=0.30&&rate<=250)||rotMag>=15)){
+    motionTriggered=true;reactionRecord(now-rgGoAt);
+  }
+}
+function reactionOrientationHandler(e){
+  if(reactionMethod!=="motion"||!rgRunning||rgPhase!=="go"||!rgGoAt)return;
+  if(!motionOrientationBaseline)motionOrientationBaseline={a:e.alpha,b:e.beta,g:e.gamma};
+  const b=motionOrientationBaseline;
+  const da=Math.abs((e.alpha??b.a)-b.a),db=Math.abs((e.beta??b.b)-b.b),dg=Math.abs((e.gamma??b.g)-b.g);
+  if(!motionTriggered&&(da>=6||db>=6||dg>=6)){
+    motionTriggered=true;reactionRecord(performance.now()-rgGoAt);
   }
 }
 function stopMotionDetection(){
   try{window.removeEventListener("devicemotion",reactionMotionHandler)}catch(e){}
-  motionBaseline=null;motionTriggered=false;
+  try{window.removeEventListener("deviceorientation",reactionOrientationHandler)}catch(e){}
+  motionListening=false;motionGoBaseline=null;motionOrientationBaseline=null;motionTriggered=false;
 }
 
 function rgLoadVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return true}catch(e){return false}}
@@ -284,7 +291,7 @@ function rgReadyGoDelay(){return 50+Math.random()*150}
 function rgClear(){
   rgCycleToken++;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
-  rgRunning=false;rgGoAt=0;rgPhase="idle";rgSetLights(false,false);motionBaseline=null;motionTriggered=false;
+  rgRunning=false;rgGoAt=0;rgPhase="idle";rgSetLights(false,false);motionBaseline=null;motionGoBaseline=null;motionOrientationBaseline=null;motionTriggered=false;stopMotionDetection();
   if("speechSynthesis" in window)try{window.speechSynthesis.cancel()}catch(e){}
   if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;
   if($("reactionStart"))$("reactionStart").disabled=false;if($("reactionStop"))$("reactionStop").disabled=true;
@@ -292,42 +299,54 @@ function rgClear(){
 }
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";motionBaseline=null;motionTriggered=false;$("rgInstruction").textContent="";
+  rgPhase="ready";motionBaseline=null;motionGoBaseline=null;motionOrientationBaseline=null;motionTriggered=false;
+  $("rgInstruction").textContent="GET READY…";rgSetLights(true,false);
   rgPlayClip("ready",null,()=>{
     if(!rgRunning||token!==rgCycleToken)return;
     rgTimer=setTimeout(()=>{
       if(!rgRunning||token!==rgCycleToken)return;
-      rgPhase="go";rgGoAt=performance.now();motionBaseline=null;motionTriggered=false;$("rgInstruction").textContent="";rgSetLights(false,true);
-      rgPlayClip("go",null,()=>{
-        if(!rgRunning||token!==rgCycleToken)return;
-        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),tpNextInterval());
-      },token);
+      rgPhase="go";rgGoAt=performance.now();
+      motionGoBaseline=null;motionOrientationBaseline=null;motionTriggered=false;
+      $("rgInstruction").textContent="GO!";rgSetLights(false,true);
+      if(reactionMethod==="motion")startMotionDetection();
+      rgPlayClip("go",null,null,token);
     },tpReadyGoDelay());
   },token);
 }
+
 function rgStartTable(){
-  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;if(reactionMethod==="motion")startMotionDetection();
-  if(reactionMethod==="motion")startMotionDetection();
+  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
   $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
+  if(reactionMethod==="motion")requestMotionPermission();
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
+
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go")return;
-  rgReactionTimes.push(Math.max(0,t));
-  rgPhase="result";rgGoAt=0;
+  rgReactionTimes.push(Math.max(0,t));rgPhase="result";rgGoAt=0;
   if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
+  if(reactionMethod==="motion")stopMotionDetection();
   $("reactionTap").disabled=true;
   $("reactionTap").textContent=reactionMethod==="motion"?"MOVE TO STOP":"TAP TO STOP";
   $("reactionInstruction").textContent=t.toFixed(0)+" ms";
   reactionShowBigTime(t);reactionRender();
   const token=rgCycleToken;
-  rgTimer=setTimeout(()=>{
-    if(!rgRunning||token!==rgCycleToken)return;
-    rgScheduleTable(token);
-  },1200);
+  rgTimer=setTimeout(()=>{if(rgRunning&&token===rgCycleToken)rgScheduleTable(token)},1200);
 }
 
+function reactionShowBigTime(ms){
+  let overlay=$("reactionBigTime");
+  if(!overlay){
+    overlay=document.createElement("div");overlay.id="reactionBigTime";
+    overlay.className="reaction-big-time";overlay.setAttribute("aria-live","assertive");
+    document.body.appendChild(overlay);
+  }
+  overlay.innerHTML='<span class="reaction-big-label">REACTION TIME</span><strong>'+Math.round(ms)+'<small> ms</small></strong>';
+  overlay.classList.remove("show");void overlay.offsetWidth;overlay.classList.add("show");
+  clearTimeout(reactionShowBigTime.timer);
+  reactionShowBigTime.timer=setTimeout(()=>overlay.classList.remove("show"),900);
+}
 function reactionRender(){
  const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
  $("reactionAttempts").textContent=a.length;
@@ -435,8 +454,7 @@ function reactionStop(){
   $("reactionTap").disabled=true;$("reactionTap").textContent="TAP TO STOP";
 }
 function reactionTap(){
-  if(reactionMethod!=="tap"||!rgRunning||rgPhase!=="go"||!rgGoAt)return;
-  reactionRecord(performance.now()-rgGoAt);
+  if(reactionMethod==="tap"&&rgRunning&&rgPhase==="go"&&rgGoAt)reactionRecord(performance.now()-rgGoAt);
 }
 
 function setReadyGoMode(v){
