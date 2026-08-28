@@ -32,6 +32,32 @@ function voiceUpdate(){
   $("goCount").textContent=voiceDB.go.filter(Boolean).length+" / 10";
 }
 function voiceSetType(t){voiceType=t;voiceSlot=0;voiceCurrentBlob=null;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===t))}
+let voiceAudioCtx=null,voiceAnalyser=null,voiceWaveFrame=null;
+function voiceWaveStart(){
+  const c=$("voiceWave");if(!c||!voiceStream)return;
+  try{
+    voiceAudioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(voiceAudioCtx.state==="suspended")voiceAudioCtx.resume();
+    voiceAnalyser=voiceAudioCtx.createAnalyser();voiceAnalyser.fftSize=1024;
+    const source=voiceAudioCtx.createMediaStreamSource(voiceStream);source.connect(voiceAnalyser);
+    c.style.display="block";
+    const ctx=c.getContext("2d"),data=new Uint8Array(voiceAnalyser.fftSize);
+    const draw=()=>{
+      if(!voiceAnalyser)return;
+      voiceWaveFrame=requestAnimationFrame(draw);
+      const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=c.clientHeight*devicePixelRatio;
+      ctx.clearRect(0,0,w,h);ctx.beginPath();ctx.lineWidth=3;ctx.strokeStyle=getComputedStyle(document.body).color||"#2563eb";
+      voiceAnalyser.getByteTimeDomainData(data);
+      for(let i=0;i<data.length;i++){const x=i/(data.length-1)*w,y=h/2+(data[i]-128)/128*h*.38;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+      ctx.stroke();
+    };draw();
+  }catch(e){c.style.display="none"}
+}
+function voiceWaveStop(){
+  if(voiceWaveFrame)cancelAnimationFrame(voiceWaveFrame);voiceWaveFrame=null;
+  try{voiceAudioCtx?.close()}catch(e){}
+  voiceAudioCtx=null;voiceAnalyser=null;
+}
 async function voiceRecord(){
   try{
     if(!window.isSecureContext){$("voiceStatus").textContent="Open the GitHub Pages HTTPS address to record.";return}
@@ -48,7 +74,7 @@ async function voiceRecord(){
     voiceRecorder.onstop=()=>{
       const type=voiceRecorder.mimeType||mime||"audio/webm";
       voiceCurrentBlob=new Blob(voiceChunks,{type});
-      voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
+      voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
       voiceRecorder=null;
       $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
       if(voiceCurrentBlob.size>0){
@@ -58,10 +84,11 @@ async function voiceRecord(){
       }else $("voiceStatus").textContent="No audio data was captured. Please try again.";
     };
     voiceRecorder.start();
+    voiceWaveStart();
     $("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");
     $("voiceStatus").textContent="Recording… speak now.";
   }catch(e){
-    voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
+    voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;voiceRecorder=null;
     $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
     $("voiceStatus").textContent=e?.name==="NotAllowedError"?"Microphone permission was denied.":"Could not start recording: "+(e?.message||e?.name||"unknown error");
   }
