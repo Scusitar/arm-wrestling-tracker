@@ -780,3 +780,19 @@ option{background:#0b121a !important;color:#fff !important}
 #myTech,#oppTech{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
 #myTech button,#oppTech button{min-height:42px}
 #length{margin-bottom:4px}
+
+/* v3.25 Add Match button controls */
+#myTech,#oppTech,#length{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#myTech button,#oppTech button,#length button{
+  min-height:46px !important;
+  font-weight:800 !important;
+  color:#e9edf2 !important;
+  background:#17222e !important;
+  border:1px solid #405466 !important;
+}
+#myTech button.selected,#oppTech button.selected,#length button.selected{
+  color:#fff !important;
+  background:linear-gradient(145deg,#3b9cff,#1557b0) !important;
+  border-color:#66b8ff !important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28) !important;
+}
