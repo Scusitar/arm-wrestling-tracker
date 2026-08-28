@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=600">
+<link rel="stylesheet" href="styles.css?v=610">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.25</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.26</b></p>
   </div>
 </header>
 
@@ -278,6 +278,10 @@
   <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
 </div>
 <button type="button" id="reactionTap" class="reaction-tap-button" disabled>TAP TO STOP</button>
+<div class="reaction-last10">
+          <h4>Last 10 Times</h4>
+          <div id="reactionLast10" class="last10-list" aria-live="polite">No times yet.</div>
+        </div>
 <div class="reaction-stats-block">
         <h3>Reaction Stats</h3>
         <div class="two">
@@ -286,15 +290,12 @@
           <div class="rec"><b>Attempts</b><br><span id="reactionAttempts">0</span></div>
           <div class="rec"><b>Last</b><br><span id="reactionLast">—</span></div>
         </div>
-        <div class="reaction-last10">
-          <h4>Last 10 Times</h4>
-          <div id="reactionLast10" class="last10-list" aria-live="polite">No times yet.</div>
-        </div>
+        
       </div>
 <div class="reaction-settings" aria-label="Reaction game timing settings">
 <h3>Timing</h3>
 <div class="reaction-setting"><label for="rgReadyMin">Between Ready and Go minimum <output id="rgReadyMinValue">0.30 s</output></label><input id="rgReadyMin" type="range" min="0.10" max="1.80" step="0.05" value="0.30"></div>
-<div class="reaction-setting"><label for="rgReadyMax">Between Ready and Go maximum <output id="rgReadyMaxValue">1.00 s</output></label><input id="rgReadyMax" type="range" min="0.15" max="2.00" step="0.05" value="1.00"></div>
+<div class="reaction-setting"><label for="rgReadyMax">Between Ready and Go maximum <output id="rgReadyMaxValue">1.00 s</output></label><input id="rgReadyMax" type="range" min="0.15" max="4.00" step="0.05" value="1.00"></div>
 <div class="reaction-setting"><label for="rgRoundMin">Between-round minimum <output id="rgRoundMinValue">5.00 s</output></label><input id="rgRoundMin" type="range" min="2.00" max="12.00" step="0.10" value="5.00"></div>
 <div class="reaction-setting"><label for="rgRoundMax">Between-round maximum <output id="rgRoundMaxValue">8.00 s</output></label><input id="rgRoundMax" type="range" min="2.10" max="15.00" step="0.10" value="8.00"></div>
 
@@ -339,6 +340,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=600"></script>
+<script src="app.js?v=610"></script>
 </body>
 </html>

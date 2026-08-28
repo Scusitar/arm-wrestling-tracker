@@ -246,6 +246,24 @@ function reactionRender(){
 }
 const tpRoundSpeedDefault=1.00;
 let tpRoundSpeed=tpRoundSpeedDefault;
+
+function reactionShowBigTime(ms){
+ let overlay=$("reactionBigTime");
+ if(!overlay){
+   overlay=document.createElement("div");
+   overlay.id="reactionBigTime";
+   overlay.className="reaction-big-time";
+   overlay.setAttribute("aria-live","assertive");
+   document.body.appendChild(overlay);
+ }
+ overlay.innerHTML=`<span class="reaction-big-label">REACTION TIME</span><strong>${ms.toFixed(0)}<small> ms</small></strong>`;
+ overlay.classList.remove("show");
+ void overlay.offsetWidth;
+ overlay.classList.add("show");
+ clearTimeout(reactionShowBigTime.timer);
+ reactionShowBigTime.timer=setTimeout(()=>overlay.classList.remove("show"),1800);
+}
+
 function tpUpdateRoundSpeedUI(){
  const e=$("tpRoundSpeed"),o=$("tpRoundSpeedValue");
  if(e)e.value=tpRoundSpeed.toFixed(2);
@@ -319,7 +337,7 @@ const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:5.00,roundMax:8.00};
 let rgTiming={...rgTimingDefault};
 function rgClampTiming(){
  rgTiming.readyMin=Math.max(.10,Math.min(1.80,rgTiming.readyMin));
- rgTiming.readyMax=Math.max(.15,Math.min(2.00,rgTiming.readyMax));
+ rgTiming.readyMax=Math.max(.15,Math.min(4.00,rgTiming.readyMax));
  if(rgTiming.readyMax<rgTiming.readyMin)rgTiming.readyMax=rgTiming.readyMin;
  rgTiming.roundMin=Math.max(2,Math.min(12,rgTiming.roundMin));
  rgTiming.roundMax=Math.max(2.1,Math.min(15,rgTiming.roundMax));
@@ -381,6 +399,7 @@ function reactionTap(){
   result.classList.remove("reaction-time-pop");
   void result.offsetWidth;
   result.classList.add("reaction-time-pop");
+  reactionShowBigTime(t);
   reactionRender();
   rgTimer=setTimeout(()=>{if(rgRunning){const token=rgCycleToken;reactionCycle(token)}},500);
 }
