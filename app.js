@@ -144,54 +144,88 @@ async function voiceKeep(){
   reader.onload=()=>{voiceDB[voiceType][voiceSlot]=reader.result;voiceCurrentBlob=null;voiceSave();voiceUpdate();$("voiceStatus").textContent="Saved. Next slot is ready.";if(voiceSlot<9){voiceSlot++;voiceUpdate()}else if(voiceType==="ready"){voiceType="go";voiceSlot=0;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===voiceType));$("voiceSetupMessage").textContent="All 10 Ready calls saved. Now record your 10 Go calls."}else{$("voiceSetupMessage").textContent="All 20 voice recordings are saved and ready to use."}};
   reader.readAsDataURL(voiceCurrentBlob);
 }
-let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[],rgVoice=null,rgLastVoice={ready:-1,go:-1};
+let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[],rgVoice=null,rgLastVoice={ready:-1,go:-1},rgPhase="idle",rgCycleToken=0;
 function rgLoadVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return true}catch(e){return false}}
 if("speechSynthesis" in window){window.speechSynthesis.addEventListener("voiceschanged",rgLoadVoice);rgLoadVoice()}
 function rgInitVoice(){try{if(!("speechSynthesis" in window))return false;rgLoadVoice();window.speechSynthesis.cancel();return true}catch(e){return false}}
-function rgSay(text,onStart,onEnd){
-  try{
-    const kind=text.toLowerCase().startsWith("ready")?"ready":"go";
-    const clips=voiceDB[kind].filter(Boolean);
-    if(clips.length){
-      let idx=0;
-      if(clips.length===1) idx=0;
-      else {
-        do{idx=Math.floor(Math.random()*clips.length)}while(idx===rgLastVoice[kind]);
-      }
-      rgLastVoice[kind]=idx;
-      const a=new Audio(clips[idx]);
-      a.preload="auto";
-      a.onplay=()=>{if(onStart)onStart()};
-      a.onended=()=>{if(onEnd)onEnd()};
-      a.onerror=()=>{if(onEnd)onEnd()};
-      a.play().catch(()=>{if(onEnd)onEnd()});
-      return true;
-    }
-    if(!("speechSynthesis" in window)){if(onEnd)onEnd();return false}
-    rgLoadVoice();
-    const u=new SpeechSynthesisUtterance(text);
-    if(rgVoice)u.voice=rgVoice;
-    u.lang=rgVoice?.lang||"en-CA";
-    u.rate=.95;u.pitch=1;u.volume=1;
-    u.onstart=()=>{if(onStart)onStart()};
-    u.onend=()=>{if(onEnd)onEnd()};
-    u.onerror=()=>{if(onEnd)onEnd()};
-    window.speechSynthesis.speak(u);
-    return true;
-  }catch(e){if(onEnd)onEnd();return false}
+function rgPickVoice(kind){
+  const clips=voiceDB[kind].filter(Boolean);
+  if(!clips.length)return null;
+  let idx=0;if(clips.length>1)do{idx=Math.floor(Math.random()*clips.length)}while(idx===rgLastVoice[kind]);
+  rgLastVoice[kind]=idx;return clips[idx];
+}
+function rgPlayClip(kind,onStart,onEnd,token){
+  const data=rgPickVoice(kind);
+  if(!data){
+    if(!("speechSynthesis" in window)){if(onEnd)onEnd();return}
+    rgLoadVoice();const u=new SpeechSynthesisUtterance(kind==="ready"?"Ready":"Go");if(rgVoice)u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=.95;u.pitch=1;u.volume=1;
+    u.onstart=()=>{if(token===rgCycleToken&&onStart)onStart()};u.onend=()=>{if(token===rgCycleToken&&onEnd)onEnd()};u.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};window.speechSynthesis.speak(u);return;
+  }
+  const a=new Audio(data);a.preload="auto";a.playbackRate=1.10;
+  a.onplay=()=>{if(token===rgCycleToken&&onStart)onStart()};
+  a.onended=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
+  a.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
+  a.play().catch(()=>{if(token===rgCycleToken&&onEnd)onEnd()});
 }
 function rgNextInterval(){return 2000+Math.random()*1200}
 function rgReadyGoDelay(){return 50+Math.random()*150}
-function rgClear(){if(rgTimer){clearTimeout(rgTimer);rgTimer=null}rgRunning=false;rgGoAt=0;if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;if($("reactionStop"))$("reactionStop").disabled=true;
-  if($("reactionStart"))$("reactionStart").disabled=false;if($("reactionTap")){$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="TAP NOW"}}
-function rgSchedule(){if(!rgRunning)return;$("rgInstruction").textContent="READY";rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("rgInstruction").textContent="GO";rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(rgSchedule,rgNextInterval())})},rgReadyGoDelay())})}
-function rgStartTable(){rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;$("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;rgTimer=setTimeout(rgSchedule,100)}
+function rgClear(){
+  rgCycleToken++;
+  if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
+  rgRunning=false;rgGoAt=0;rgPhase="idle";
+  if("speechSynthesis" in window)try{window.speechSynthesis.cancel()}catch(e){}
+  if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;
+  if($("reactionStart"))$("reactionStart").disabled=false;if($("reactionStop"))$("reactionStop").disabled=true;
+  if($("reactionTap")){$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="TAP NOW"}
+}
+function rgScheduleTable(token){
+  if(!rgRunning||token!==rgCycleToken)return;
+  rgPhase="ready";$("rgInstruction").textContent="";
+  rgPlayClip("ready",null,()=>{
+    if(!rgRunning||token!==rgCycleToken)return;
+    rgTimer=setTimeout(()=>{
+      if(!rgRunning||token!==rgCycleToken)return;
+      rgPhase="go";$("rgInstruction").textContent="";
+      rgPlayClip("go",null,()=>{
+        if(!rgRunning||token!==rgCycleToken)return;
+        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),rgNextInterval());
+      },token);
+    },rgReadyGoDelay());
+  },token);
+}
+function rgStartTable(){
+  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
+  $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
+  const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
+}
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
-function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");rgGoAt=0;rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");/* Reaction clock starts exactly when the Go audio begins (G/onplay). */rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())})},rgReadyGoDelay())})}
-function reactionStart(){rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;$("reactionStart").disabled=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";rgTimer=setTimeout(reactionCycle,100)}
-function reactionStop(){rgClear();$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="TAP NOW";$("reactionInstruction").textContent="Press START, then wait for GO."}
-function reactionTap(){if(!rgRunning)return;if(!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();setTimeout(()=>{if(rgRunning)reactionCycle()},500)}
+function reactionCycle(token){
+  if(!rgRunning||token!==rgCycleToken)return;
+  rgPhase="ready";rgGoAt=0;$("reactionInstruction").textContent="";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");
+  rgPlayClip("ready",null,()=>{
+    if(!rgRunning||token!==rgCycleToken)return;
+    rgTimer=setTimeout(()=>{
+      if(!rgRunning||token!==rgCycleToken)return;
+      rgPhase="go";$("reactionInstruction").textContent="";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
+      rgPlayClip("go",()=>{if(token===rgCycleToken&&rgRunning){rgGoAt=performance.now()}},()=>{
+        if(!rgRunning||token!==rgCycleToken)return;
+        rgPhase="waiting";rgTimer=setTimeout(()=>{if(rgRunning&&token===rgCycleToken&&!rgGoAt)reactionCycle(token)},rgNextInterval());
+      },token);
+    },rgReadyGoDelay());
+  },token);
+}
+function reactionStart(){
+  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;rgPhase="ready";
+  $("reactionStart").disabled=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";
+  const token=rgCycleToken;rgTimer=setTimeout(()=>reactionCycle(token),100);
+}
+function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO.";$("reactionTap").disabled=true;$("reactionTap").textContent="TAP NOW"}
+function reactionTap(){
+  if(!rgRunning)return;
+  if(rgPhase!=="go"||!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}
+  const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;rgPhase="idle";$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();rgTimer=setTimeout(()=>{if(rgRunning){const token=rgCycleToken;reactionCycle(token)}},500);
+}
 function setReadyGoMode(v){rgMode=v;$("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));$("tableReadyGo").classList.toggle("hidden",v!=="table");$("reactionReadyGo").classList.toggle("hidden",v!=="reaction");rgClear()}
 function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="dashboard")renderDashboard();if(id==="history")renderHistory();if(id==="opponents")renderOpponents();if(id==="training")renderTraining()}
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.page)));
