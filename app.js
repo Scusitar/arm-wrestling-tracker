@@ -237,18 +237,27 @@ function rgClear(){
 
 function rgScheduleTable(token){
   if(!rgRunning||token!==rgCycleToken)return;
-  rgPhase="ready";$("rgInstruction").textContent="";
-  rgPlayClip("ready",null,()=>{
+  rgPhase="ready";
+  $("rgInstruction").textContent="";
+  rgSetLights(true,false);
+
+  // Voice is feedback only. It must never control the Ready -> Go state.
+  try{rgPlayClip("ready",null,null,token)}catch(e){}
+
+  rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
+    rgPhase="go";
+    rgGoAt=performance.now();
+    $("rgInstruction").textContent="";
+    rgSetLights(false,true);
+
+    try{rgPlayClip("go",null,null,token)}catch(e){}
+
+    // Independent round timer: always schedule the next Ready.
     rgTimer=setTimeout(()=>{
-      if(!rgRunning||token!==rgCycleToken)return;
-      rgPhase="go";$("rgInstruction").textContent="";
-      rgPlayClip("go",null,()=>{
-        if(!rgRunning||token!==rgCycleToken)return;
-        rgPhase="idle";rgTimer=setTimeout(()=>rgScheduleTable(token),tpNextInterval());
-      },token);
-    },tpReadyGoDelay());
-  },token);
+      if(rgRunning&&token===rgCycleToken)rgScheduleTable(token);
+    },tpNextInterval());
+  },tpReadyGoDelay());
 }
 
 function tpRoundDelay(){
@@ -257,12 +266,21 @@ function tpRoundDelay(){
   return (min+Math.random()*(max-min))*1000;
 }
 function rgStartTable(){
-  rgClear();rgLastVoice={ready:-1,go:-1};rgInitVoice();rgRunning=true;
-  $("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;
-  const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
+  rgClear();
+  rgLastVoice={ready:-1,go:-1};
+  rgInitVoice();
+  rgRunning=true;
+  $("rgInstruction").textContent="GET READY…";
+  $("rgStart").disabled=true;
+  $("rgStop").disabled=false;
+  const token=rgCycleToken;
+  rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
 
-function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
+function rgStopTable(){
+  rgClear();
+  $("rgInstruction").textContent="Press START when you're ready.";
+}
 function reactionRecord(t){
   if(!rgRunning||rgPhase!=="go"||!rgGoAt)return;
   rgReactionTimes.push(Math.max(0,t));rgPhase="result";rgGoAt=0;
