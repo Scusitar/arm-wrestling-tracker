@@ -240,20 +240,14 @@ function rgScheduleTable(token){
   rgPhase="ready";
   $("rgInstruction").textContent="";
   rgSetLights(true,false);
-
-  // Voice is feedback only. It must never control the Ready -> Go state.
   try{rgPlayClip("ready",null,null,token)}catch(e){}
-
   rgTimer=setTimeout(()=>{
     if(!rgRunning||token!==rgCycleToken)return;
     rgPhase="go";
     rgGoAt=performance.now();
     $("rgInstruction").textContent="";
     rgSetLights(false,true);
-
     try{rgPlayClip("go",null,null,token)}catch(e){}
-
-    // Independent round timer: always schedule the next Ready.
     rgTimer=setTimeout(()=>{
       if(rgRunning&&token===rgCycleToken)rgScheduleTable(token);
     },tpNextInterval());
@@ -336,7 +330,7 @@ function tpBindTiming(){
    const e=$(id);if(e)e.addEventListener("input",()=>{tpTiming[key]=parseFloat(e.value);tpClampTiming();tpUpdateTimingUI()});
  });
  const reset=$("tpTimingReset");
- if(reset)reset.addEventListener("click",()=>{tpTiming={...tpTimingDefault};tpVoiceSpeed=tpVoiceSpeedDefault;tpRoundSpeed=tpRoundSpeedDefault;tpUpdateTimingUI();tpUpdateRoundSpeedUI();tpUpdateVoiceSpeedUI()});
+ if(reset)reset.addEventListener("click",()=>{tpTiming={...tpTimingDefault};tpUpdateTimingUI()});
  tpUpdateTimingUI();
 }
 function tpReadTiming(){
@@ -351,11 +345,11 @@ function tpReadTiming(){
 }
 function tpReadyGoDelay(){
  const t=tpReadTiming();
- return rgTimingDelay(t.readyMin/tpRoundSpeed,t.readyMax/tpRoundSpeed);
+ return rgTimingDelay(t.readyMin,t.readyMax);
 }
 function tpNextInterval(){
  const t=tpReadTiming();
- return rgTimingDelay(t.roundMin/tpRoundSpeed,t.roundMax/tpRoundSpeed);
+ return rgTimingDelay(t.roundMin,t.roundMax);
 }
 
 const rgTimingDefault={readyMin:1.00,readyMax:3.00,roundMin:7.00,roundMax:12.00};
