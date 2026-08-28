@@ -339,8 +339,8 @@ function rgClampTiming(){
  rgTiming.readyMin=Math.max(.10,Math.min(1.80,rgTiming.readyMin));
  rgTiming.readyMax=Math.max(.15,Math.min(4.00,rgTiming.readyMax));
  if(rgTiming.readyMax<rgTiming.readyMin)rgTiming.readyMax=rgTiming.readyMin;
- rgTiming.roundMin=Math.max(3,Math.min(15,rgTiming.roundMin));
- rgTiming.roundMax=Math.max(3.1,Math.min(20,rgTiming.roundMax));
+ rgTiming.roundMin=7.00;
+ rgTiming.roundMax=12.00;
  if(rgTiming.roundMax<rgTiming.roundMin)rgTiming.roundMax=rgTiming.roundMin;
 }
 function rgUpdateTimingUI(){
