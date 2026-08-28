@@ -183,7 +183,7 @@ function rgPlayClip(kind,onStart,onEnd,token){
   a.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
   a.play().catch(()=>{if(token===rgCycleToken&&onEnd)onEnd()});
 }
-function rgNextInterval(){return 2000+Math.random()*1200}
+function rgNextInterval(){return 3500+Math.random()*2000}
 function rgReadyGoDelay(){return 50+Math.random()*150}
 function rgClear(){
   rgCycleToken++;
@@ -232,7 +232,7 @@ function reactionCycle(token){
     rgBeep();
     $("reactionTap").disabled=false;$("reactionTap").textContent="TAP TO STOP";
     $("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
-  },50+Math.random()*150);
+  },300+Math.random()*700);
 }
 function reactionStart(){
   rgClear();rgRunning=true;rgPhase="ready";
