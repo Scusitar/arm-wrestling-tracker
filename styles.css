@@ -925,3 +925,41 @@ option{background:#0b121a !important;color:#fff !important}
 .voice-trim-tools{margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.10)}
 .voice-trim-tools button{width:100%}
 .voice-trim-tools p{margin:.55rem 0 0}
+
+#matchType button.match-choice-selected,#arm button.match-choice-selected,#tableSide button.match-choice-selected{
+  background:linear-gradient(145deg,#3b9cff,#1557b0)!important;
+  color:#fff!important;border-color:#66b8ff!important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.25),0 4px 12px rgba(0,0,0,.3)!important;
+}
+#matchType button:not(.match-choice-selected),#arm button:not(.match-choice-selected),#tableSide button:not(.match-choice-selected){
+  background:#17222e!important;color:#e9edf2!important;
+}
+
+/* Add Match: selected choice must always be visibly highlighted. */
+#matchType button.selected,
+#arm button.selected,
+#singleStrap button.selected,
+#tableSide button.selected,
+#result button.selected,
+#go button.selected,
+#myTech button.selected,
+#oppTech button.selected,
+#length button.selected{
+  background:linear-gradient(145deg,#3b9cff,#1557b0)!important;
+  color:#fff!important;
+  border-color:#66b8ff!important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.25),0 4px 12px rgba(0,0,0,.3)!important;
+}
+
+#matchType button:not(.selected),
+#arm button:not(.selected),
+#singleStrap button:not(.selected),
+#tableSide button:not(.selected),
+#result button:not(.selected),
+#go button:not(.selected),
+#myTech button:not(.selected),
+#oppTech button:not(.selected),
+#length button:not(.selected){
+  background:#17222e!important;
+  color:#e9edf2!important;
+}

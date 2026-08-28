@@ -33,7 +33,7 @@ function bindPenaltyButtons(){
 function matchInt(id){const e=$(id);const n=e?parseInt(e.value,10):0;return Number.isFinite(n)&&n>=0?n:0}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 
-function setGroup(id,key,value){form[key]=value;const el=$(id);if(!el)return;el.querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===value))}
+function setGroup(id,key,value){form[key]=value;const el=$(id);if(!el)return;el.querySelectorAll("button").forEach(b=>{const on=b.dataset.value===value;b.classList.toggle("selected",on);if(id==="matchType"||id==="arm"||id==="tableSide")b.classList.toggle("match-choice-selected",on);b.setAttribute("aria-pressed",on?"true":"false")})}
 function resetRoundEditor(){$("rounds").innerHTML="";roundNumber=0}
 function resetMatchForm(){editingMatchId=null;$("matchForm").reset();resetRoundEditor();setPenaltyValue("matchFouls",0);setPenaltyValue("matchWarnings",0);form.type="Practice";form.arm="Right";form.singleStrap="No";form.side="Left";form.result="Win";form.go="I hit first";$("matchMode").textContent="New Match";$("cancelMatchEdit").classList.add("hidden");setGroup("matchType","type","Practice");setGroup("arm","arm","Right");setGroup("singleStrap","singleStrap","No");setGroup("tableSide","side","Left");setGroup("result","result","Win");setGroup("go","go","I hit first");setGroup("myTech","myTech","Not recorded");setGroup("oppTech","oppTech","Not recorded");setGroup("length","length","Not recorded");$("singleFields").classList.remove("hidden");$("superFields").classList.add("hidden")}
 function loadMatchForEdit(id){const m=state.matches.find(x=>x.id===id);if(!m)return;editingMatchId=id;page("match");$("matchMode").textContent="Edit Match";$("cancelMatchEdit").classList.remove("hidden");$("opponent").value=m.opponent||"";$("myWeight").value=m.myWeight||"";$("oppWeight").value=m.oppWeight||"";$("myHeight").value=m.myHeight||"";$("oppHeight").value=m.oppHeight||"";$("weightClass").value=m.weightClass||"Not recorded";$("comments").value=m.comments||"";setPenaltyValue("matchFouls",m.fouls);setPenaltyValue("matchWarnings",m.warnings);setGroup("matchType","type",m.matchType);setGroup("arm","arm",m.arm);setGroup("tableSide","side",m.side);if(m.matchType==="Supermatch"){$("singleFields").classList.add("hidden");$("superFields").classList.remove("hidden");resetRoundEditor();(m.rounds||[]).forEach(r=>addRound(r))}else{$("singleFields").classList.remove("hidden");$("superFields").classList.add("hidden");setGroup("singleStrap","singleStrap",m.strap||"No");setGroup("result","result",m.result||"Win");setGroup("go","go",m.go||"Unclear");setGroup("myTech","myTech",m.myTech||"Not recorded");setGroup("oppTech","oppTech",m.oppTech||"Not recorded");setGroup("length","length",m.length||"Not recorded")}}
@@ -523,7 +523,27 @@ for(let w=130;w<=500;w+=5){$("myWeight").insertAdjacentHTML("beforeend",`<option
 for(let h=48;h<=96;h++){const ft=Math.floor(h/12),inch=h%12,label=ft+"'"+inch+'"';$("myHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`);$("oppHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`)}
 for(let i=1;i<=10;i++)$("sets").insertAdjacentHTML("beforeend",`<option>${i}</option>`);
 for(let i=1;i<=30;i++)$("reps").insertAdjacentHTML("beforeend",`<option>${i}</option>`);
-function group(id,key){const el=$(id);if(!el)return;el.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{form[key]=b.dataset.value;$(id).querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));if(key==="type"){let sm=form.type==="Supermatch";$("singleFields").classList.toggle("hidden",sm);$("superFields").classList.toggle("hidden",!sm);if(sm&&!$("rounds").children.length)addRound()}}))}
+function group(id,key){
+ const el=$(id);if(!el)return;
+ el.querySelectorAll("button").forEach(b=>{
+  if(b.dataset.choiceBound==="1")return;
+  b.dataset.choiceBound="1";
+  b.addEventListener("click",()=>{
+   form[key]=b.dataset.value;
+   el.querySelectorAll("button").forEach(x=>{
+    const on=x===b;
+    x.classList.toggle("selected",on);
+    x.setAttribute("aria-pressed",on?"true":"false");
+   });
+   if(key==="type"){
+    const sm=form.type==="Supermatch";
+    $("singleFields").classList.toggle("hidden",sm);
+    $("superFields").classList.toggle("hidden",!sm);
+    if(sm&&!$("rounds").children.length)addRound();
+   }
+  });
+ });
+}
 group("matchType","type");group("arm","arm");group("singleStrap","singleStrap");group("tableSide","side");group("result","result");group("go","go");group("trainingArm","trainingArm");group("quality","quality");group("myTech","myTech");group("oppTech","oppTech");group("length","length");
 function addRound(roundData=null){roundNumber++;let d=document.createElement("div");d.className="round";let rr=roundData?.result||"Win",gg=roundData?.go||"I hit first",rs=roundData?.strap||"No";d.innerHTML=`<h3>Round ${roundNumber}</h3><label>Strap</label><div class="segmented rstrap"><button type="button" data-value="No" class="${rs==="No"?"selected":""}">No</button><button type="button" data-value="Yes" class="${rs==="Yes"?"selected":""}">Yes</button></div><label>Result</label><div class="segmented rr"><button type="button" data-value="Win" class="${rr==="Win"?"selected":""}">WIN</button><button type="button" data-value="Loss" class="${rr==="Loss"?"selected":""}">LOSS</button></div><label>Who got the GO?</label><div class="segmented rg"><button type="button" data-value="I hit first" class="${gg==="I hit first"?"selected":""}">I hit first</button><button type="button" data-value="Opponent hit first" class="${gg==="Opponent hit first"?"selected":""}">They hit first</button><button type="button" data-value="Even" class="${gg==="Even"?"selected":""}">Even</button><button type="button" data-value="Unclear" class="${gg==="Unclear"?"selected":""}">Unclear</button></div><div class="two"><label>YOUR TECHNIQUE<select class="rm"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label><label>OPPONENT'S TECHNIQUE<select class="ro"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label></div><label>Match length<select class="rl"><option>Not recorded</option><option>Under 5 seconds</option><option>5–30 seconds</option><option>Over 30 seconds</option></select></label>`;$("rounds").appendChild(d);d.querySelector(".rm").value=roundData?.myTech||"Not recorded";d.querySelector(".ro").value=roundData?.oppTech||"Not recorded";d.querySelector(".rl").value=roundData?.length||"Not recorded";d.querySelectorAll(".rstrap button").forEach(b=>b.addEventListener("click",()=>{rs=b.dataset.value;d.querySelectorAll(".rstrap button").forEach(x=>x.classList.toggle("selected",x===b))}));d.querySelectorAll(".rr button").forEach(b=>b.addEventListener("click",()=>{rr=b.dataset.value;d.querySelectorAll(".rr button").forEach(x=>x.classList.toggle("selected",x===b))}));d.querySelectorAll(".rg button").forEach(b=>b.addEventListener("click",()=>{gg=b.dataset.value;d.querySelectorAll(".rg button").forEach(x=>x.classList.toggle("selected",x===b))}));d.getRound=()=>({strap:rs,result:rr,go:gg,myTech:d.querySelector(".rm").value,oppTech:d.querySelector(".ro").value,length:d.querySelector(".rl").value})}
 $("addRound").addEventListener("click",addRound);
@@ -630,5 +650,5 @@ voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);$("voiceTrimAll")?.addEventListener("click",voiceTrimAll);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=830").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=850").catch(()=>{});
 })();
