@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=850">
+<link rel="stylesheet" href="styles.css?v=910">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.49</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.55</b></p>
   </div>
 </header>
 
@@ -41,10 +41,21 @@
       <button type="button" data-value="Tournament">Tournament</button>
       <button type="button" data-value="Supermatch">Supermatch</button>
     </div>
+    <label class="stats-filter-label">ARM</label>
+    <div class="segmented" id="statArmScope">
+      <button type="button" data-value="All" class="selected">ALL ARMS</button>
+      <button type="button" data-value="Right">RIGHT ARM</button>
+      <button type="button" data-value="Left">LEFT ARM</button>
+    </div>
+  </article>
+  <article class="card">
+    <h2>Arm Records</h2>
+    <p class="muted">Overall record kept separately for each arm.</p>
+    <div id="armRecords" class="two"></div>
   </article>
   <article class="card">
     <h2>My Stats</h2>
-    <p class="muted">Stats are kept separate by match type.</p>
+    <p class="muted">Stats can be viewed separately for the right and left arm.</p>
 <div id="myStats"></div>
   </article>
   <article class="card">
@@ -74,7 +85,11 @@
 
 <section id="match" class="page">
   <article class="card">
-    <div class="row"><h2 id="matchMode">New Match</h2><button type="button" id="cancelMatchEdit" class="hidden">Cancel Edit</button></div>
+    <div class="field">
+<label for="matchDate">DATE</label>
+<input id="matchDate" type="date">
+</div>
+<div class="row"><h2 id="matchMode">New Match</h2><button type="button" id="cancelMatchEdit" class="hidden">Cancel Edit</button></div>
     <form id="matchForm">
       <label>Opponent
         <input id="opponent" list="opponentList" required placeholder="Opponent name">
@@ -163,7 +178,20 @@
         </div>
       </div>
 
-      <div id="superFields" class="hidden">
+      <div class="supermatch-summary">
+<label>SUPER MATCH FORMAT</label>
+<div id="superFormat" class="segmented">
+<button type="button" data-value="Best of 3">BEST OF 3</button>
+<button type="button" data-value="Best of 5">BEST OF 5</button>
+<button type="button" data-value="Best of 7">BEST OF 7</button>
+</div>
+<label>SUPER MATCH RESULT</label>
+<div id="superResult" class="segmented">
+<button type="button" data-value="Win">I WON</button>
+<button type="button" data-value="Loss">I LOST</button>
+</div>
+</div>
+<div id="superFields" class="hidden">
         <div class="notice"><b>Supermatch</b><br>Strap is recorded separately for every round. Result, GO, techniques and length are also recorded for every round.</div>
         <div id="rounds"></div>
 <button type="button" id="addRound">+ Add Round</button>
@@ -351,6 +379,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=850"></script>
+<script src="app.js?v=910"></script>
 </body>
 </html>
