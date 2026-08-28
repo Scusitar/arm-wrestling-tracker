@@ -333,14 +333,14 @@ function tpNextInterval(){
  return rgTimingDelay(t.roundMin/tpRoundSpeed,t.roundMax/tpRoundSpeed);
 }
 
-const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:5.00,roundMax:8.00};
+const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:7.00,roundMax:12.00};
 let rgTiming={...rgTimingDefault};
 function rgClampTiming(){
  rgTiming.readyMin=Math.max(.10,Math.min(1.80,rgTiming.readyMin));
  rgTiming.readyMax=Math.max(.15,Math.min(4.00,rgTiming.readyMax));
  if(rgTiming.readyMax<rgTiming.readyMin)rgTiming.readyMax=rgTiming.readyMin;
- rgTiming.roundMin=Math.max(2,Math.min(12,rgTiming.roundMin));
- rgTiming.roundMax=Math.max(2.1,Math.min(15,rgTiming.roundMax));
+ rgTiming.roundMin=Math.max(3,Math.min(15,rgTiming.roundMin));
+ rgTiming.roundMax=Math.max(3.1,Math.min(20,rgTiming.roundMax));
  if(rgTiming.roundMax<rgTiming.roundMin)rgTiming.roundMax=rgTiming.roundMin;
 }
 function rgUpdateTimingUI(){
