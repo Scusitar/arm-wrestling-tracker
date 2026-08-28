@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=920">
+<link rel="stylesheet" href="styles.css?v=940">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.56</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.58</b></p>
   </div>
 </header>
 
@@ -179,11 +179,6 @@
       </div>
 
       
-<label>SUPER MATCH RESULT</label>
-<div id="superResult" class="segmented">
-<button type="button" data-value="Win">I WON</button>
-<button type="button" data-value="Loss">I LOST</button>
-</div>
 </div>
 <div id="superFields" class="hidden"><div class="supermatch-summary">
 <label>SUPER MATCH FORMAT</label>
@@ -192,9 +187,15 @@
 <button type="button" data-value="Best of 5">BEST OF 5</button>
 <button type="button" data-value="Best of 7">BEST OF 7</button>
 </div>
+<label>SUPER MATCH RESULT</label>
+<div id="superResult" class="segmented">
+<button type="button" data-value="Win">I WON</button>
+<button type="button" data-value="Loss">I LOST</button>
+</div>
         <div class="notice"><b>Supermatch</b><br>Strap is recorded separately for every round. Result, GO, techniques and length are also recorded for every round.</div>
         <div id="rounds"></div>
 <button type="button" id="addRound">+ Add Round</button>
+      </div>
       </div>
 
       <div class="two">
@@ -379,6 +380,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=920"></script>
+<script src="app.js?v=940"></script>
 </body>
 </html>

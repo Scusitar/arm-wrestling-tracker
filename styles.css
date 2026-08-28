@@ -1014,3 +1014,10 @@ input[type="date"]{color-scheme:dark}
   background:#17222e!important;
   color:#e9edf2!important;
 }
+
+.supermatch-summary{margin-bottom:14px}
+#superResult{margin-bottom:8px}
+
+/* Supermatch round technique and length choices are buttons, not dropdowns. */
+.round .rm,.round .ro,.round .rl{margin-top:6px}
+.round .rm button,.round .ro button,.round .rl button{min-height:38px}

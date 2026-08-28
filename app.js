@@ -584,7 +584,23 @@ function group(id,key){
  });
 }
 group("matchType","type");group("arm","arm");group("singleStrap","singleStrap");group("tableSide","side");group("result","result");group("go","go");group("trainingArm","trainingArm");group("quality","quality");group("myTech","myTech");group("oppTech","oppTech");group("length","length");group("superFormat","superFormat");group("superResult","superResult");
-function addRound(roundData=null){roundNumber++;let d=document.createElement("div");d.className="round";let rr=roundData?.result||"Win",gg=roundData?.go||"I hit first",rs=roundData?.strap||"No";d.innerHTML=`<h3>Round ${roundNumber}</h3><label>Strap</label><div class="segmented rstrap"><button type="button" data-value="No" class="${rs==="No"?"selected":""}">No</button><button type="button" data-value="Yes" class="${rs==="Yes"?"selected":""}">Yes</button></div><label>Result</label><div class="segmented rr"><button type="button" data-value="Win" class="${rr==="Win"?"selected":""}">WIN</button><button type="button" data-value="Loss" class="${rr==="Loss"?"selected":""}">LOSS</button></div><label>Who got the GO?</label><div class="segmented rg"><button type="button" data-value="I hit first" class="${gg==="I hit first"?"selected":""}">I hit first</button><button type="button" data-value="Opponent hit first" class="${gg==="Opponent hit first"?"selected":""}">They hit first</button><button type="button" data-value="Even" class="${gg==="Even"?"selected":""}">Even</button><button type="button" data-value="Unclear" class="${gg==="Unclear"?"selected":""}">Unclear</button></div><div class="two"><label>YOUR TECHNIQUE<select class="rm"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label><label>OPPONENT'S TECHNIQUE<select class="ro"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label></div><label>Match length<select class="rl"><option>Not recorded</option><option>Under 5 seconds</option><option>5–30 seconds</option><option>Over 30 seconds</option></select></label>`;$("rounds").appendChild(d);d.querySelector(".rm").value=roundData?.myTech||"Not recorded";d.querySelector(".ro").value=roundData?.oppTech||"Not recorded";d.querySelector(".rl").value=roundData?.length||"Not recorded";function bindRoundChoices(container,selector,getValue,setValue){
+function addRound(roundData=null){roundNumber++;let d=document.createElement("div");d.className="round";let rr=roundData?.result||"Win",gg=roundData?.go||"I hit first",rs=roundData?.strap||"No",myTech=roundData?.myTech||"Not recorded",oppTech=roundData?.oppTech||"Not recorded",roundLength=roundData?.length||"Not recorded";d.innerHTML=`<h3>Round ${roundNumber}</h3><label>Strap</label><div class="segmented rstrap"><button type="button" data-value="No" class="${rs==="No"?"selected":""}">No</button><button type="button" data-value="Yes" class="${rs==="Yes"?"selected":""}">Yes</button></div><label>Result</label><div class="segmented rr"><button type="button" data-value="Win" class="${rr==="Win"?"selected":""}">WIN</button><button type="button" data-value="Loss" class="${rr==="Loss"?"selected":""}">LOSS</button></div><label>Who got the GO?</label><div class="segmented rg"><button type="button" data-value="I hit first" class="${gg==="I hit first"?"selected":""}">I hit first</button><button type="button" data-value="Opponent hit first" class="${gg==="Opponent hit first"?"selected":""}">They hit first</button><button type="button" data-value="Even" class="${gg==="Even"?"selected":""}">Even</button><button type="button" data-value="Unclear" class="${gg==="Unclear"?"selected":""}">Unclear</button></div><div class="two technique-buttons">
+<label>YOUR TECHNIQUE<div class="segmented four rm"><button type="button" data-value="Not recorded">Not recorded</button><button type="button" data-value="Toproll">Toproll</button><button type="button" data-value="Hook">Hook</button><button type="button" data-value="Press">Press</button><button type="button" data-value="King's Move">King's Move</button><button type="button" data-value="Other">Other</button></div></label>
+<label>OPPONENT'S TECHNIQUE<div class="segmented four ro"><button type="button" data-value="Not recorded">Not recorded</button><button type="button" data-value="Toproll">Toproll</button><button type="button" data-value="Hook">Hook</button><button type="button" data-value="Press">Press</button><button type="button" data-value="King's Move">King's Move</button><button type="button" data-value="Other">Other</button></div></label>
+</div>
+<label>Match length</label>
+<div class="segmented four rl"><button type="button" data-value="Not recorded">Not recorded</button><button type="button" data-value="Under 5 seconds">Under 5 sec</button><button type="button" data-value="5–30 seconds">5–30 sec</button><button type="button" data-value="Over 30 seconds">Over 30 sec</button></div>`;$("rounds").appendChild(d);function selectRoundValue(selector,value){
+ const el=d.querySelector(selector);if(!el)return;
+ el.querySelectorAll("button").forEach(b=>{
+  const on=b.dataset.value===value;
+  b.classList.toggle("selected",on);
+  b.setAttribute("aria-pressed",on?"true":"false");
+ });
+}
+selectRoundValue(".rm",roundData?.myTech||"Not recorded");
+selectRoundValue(".ro",roundData?.oppTech||"Not recorded");
+selectRoundValue(".rl",roundData?.length||"Not recorded");
+function bindRoundChoices(container,selector,getValue,setValue){
  container.querySelectorAll(selector).forEach(b=>{
   b.setAttribute("aria-pressed",b.classList.contains("selected")?"true":"false");
   b.addEventListener("click",()=>{
@@ -599,7 +615,11 @@ function addRound(roundData=null){roundNumber++;let d=document.createElement("di
 }
 bindRoundChoices(d,".rstrap button",()=>rs,v=>{rs=v});
 bindRoundChoices(d,".rr button",()=>rr,v=>{rr=v});
-bindRoundChoices(d,".rg button",()=>gg,v=>{gg=v});d.getRound=()=>({strap:rs,result:rr,go:gg,myTech:d.querySelector(".rm").value,oppTech:d.querySelector(".ro").value,length:d.querySelector(".rl").value})}
+bindRoundChoices(d,".rg button",()=>gg,v=>{gg=v});
+bindRoundChoices(d,".rm button",()=>myTech,v=>{myTech=v});
+bindRoundChoices(d,".ro button",()=>oppTech,v=>{oppTech=v});
+bindRoundChoices(d,".rl button",()=>roundLength,v=>{roundLength=v});
+d.getRound=()=>({strap:rs,result:rr,go:gg,myTech,oppTech,length:roundLength})}
 $("addRound").addEventListener("click",addRound);
 $("matchForm").addEventListener("submit",e=>{e.preventDefault();let opponent=$("opponent").value.trim();if(!opponent)return alert("Enter an opponent.");let m={id:editingMatchId||Date.now(),opponent,date:$("matchDate").value||todayLocal(),matchType:form.type,arm:form.arm,side:form.side,myWeight:$("myWeight").value,oppWeight:$("oppWeight").value,myHeight:$("myHeight").value,oppHeight:$("oppHeight").value,weightClass:$("weightClass").value,fouls:penaltyValue("matchFouls"),warnings:penaltyValue("matchWarnings"),comments:$("comments").value.trim()};if(form.type==="Supermatch"){m.superFormat=form.superFormat;m.superResult=form.superResult;m.result=form.superResult;m.rounds=[...$("rounds").children].map(x=>x.getRound())}else{m.strap=form.singleStrap;m.result=form.result;m.go=form.go;m.myTech=form.myTech;m.oppTech=form.oppTech;m.length=form.length}if(editingMatchId){const i=state.matches.findIndex(x=>x.id===editingMatchId);if(i>=0)state.matches[i]=m}else state.matches.unshift(m);saveMatchDefaults();alert(editingMatchId?"Match updated.":"Match saved.");resetMatchForm();page("history")});
 $("cancelMatchEdit").addEventListener("click",()=>{resetMatchForm();page("dashboard")});
@@ -727,5 +747,5 @@ voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);$("voiceTrimAll")?.addEventListener("click",voiceTrimAll);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=920").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=940").catch(()=>{});
 })();
