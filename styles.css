@@ -492,3 +492,146 @@ input:focus,select:focus,textarea:focus{
   border-color:#28445e !important;
   color:#edf6ff !important;
 }
+
+/* ===== v3.13 FINAL CONTRAST OVERRIDE ===== */
+html,body{
+  background:#080b10 !important;
+  color:#f5f7fa !important;
+}
+body *{
+  color:#e9edf2;
+}
+
+/* All major surfaces */
+main,section,article,.card,.panel,.section,.match-card,.training-card,
+.voice-setup-card,.stat,.stat-card,
+[class*="card"],[class*="panel"],[class*="section"]{
+  background:#111923 !important;
+  color:#e9edf2 !important;
+  border-color:#2b3948 !important;
+}
+
+/* Kill legacy pale/white backgrounds on content boxes */
+.card[style*="background"],.panel[style*="background"],
+.section[style*="background"],[class*="card"][style*="background"],
+[style*="background-color"]{
+  background-color:#111923 !important;
+  color:#e9edf2 !important;
+}
+
+/* Typography: explicit contrast */
+h1,h2,h3,h4,h5,h6,
+.card h1,.card h2,.card h3,.card h4,.card h5,.card h6,
+.panel h1,.panel h2,.panel h3,.panel h4,.panel h5,.panel h6,
+.section h1,.section h2,.section h3,.section h4{
+  color:#ffffff !important;
+}
+p,span,label,small,div,li,dt,dd,strong,b{
+  color:#e4e9ef;
+}
+.card p,.card span,.card label,.card small,.card div,
+.panel p,.panel span,.panel label,.panel small,.panel div,
+.section p,.section span,.section label,.section small,.section div{
+  color:#e4e9ef !important;
+}
+.muted,.hint,.help,.description,.subtext,
+.card .muted,.panel .muted,.section .muted{
+  color:#aeb8c5 !important;
+}
+
+/* Numbers/stat values */
+.stat *, .stat-card *, [class*="stat"] *{
+  color:#ffffff !important;
+}
+.stat .label,.stat-card .label,[class*="stat"] .label{
+  color:#aeb8c5 !important;
+}
+
+/* Buttons: dark default + clear white text */
+button{
+  background:#18232f !important;
+  color:#ffffff !important;
+  border-color:#3a4c5d !important;
+}
+button *{
+  color:#ffffff !important;
+}
+button:disabled{
+  background:#121a22 !important;
+  color:#8e9aa7 !important;
+}
+
+/* Navigation */
+.tabs button,.tabs a,nav button,nav a{
+  background:#111923 !important;
+  color:#ffffff !important;
+}
+.tabs button.active,button.active,button[aria-selected="true"]{
+  background:#1685d8 !important;
+  color:#ffffff !important;
+}
+
+/* Inputs */
+input,select,textarea{
+  background:#070d14 !important;
+  color:#ffffff !important;
+  border-color:#34495c !important;
+}
+input::placeholder,textarea::placeholder{
+  color:#7f8b98 !important;
+}
+option{
+  background:#0b1118 !important;
+  color:#ffffff !important;
+}
+
+/* Blue information/analytics boxes */
+.info,.notice,.callout,.analytics-card,
+[class*="analytics"],[class*="notice"],[class*="callout"]{
+  background:#102338 !important;
+  color:#eef6ff !important;
+  border-color:#294a67 !important;
+}
+.info *, .notice *, .callout *, .analytics-card *,
+[class*="analytics"] *,[class*="notice"] *,[class*="callout"] *{
+  color:#eef6ff !important;
+}
+
+/* Tables/list rows */
+table,thead,tbody,tr,td,th,
+.list,.list-item{
+  background:#111923 !important;
+  color:#e9edf2 !important;
+  border-color:#2b3948 !important;
+}
+th{color:#ffffff !important}
+
+/* Special result colors */
+.win,.success,.positive,[class*="win"],[class*="success"]{
+  color:#5eea8a !important;
+}
+
+/* Reaction UI must keep its own colors */
+.reaction-lights{background:#080f16 !important}
+.reaction-light{background:#151d26 !important;color:transparent !important}
+.reaction-light.reaction-yellow.on{
+  background:radial-gradient(circle at 38% 34%,#fff7ad,#f5c542 42%,#d58d12 100%) !important;
+}
+.reaction-light.reaction-green.on{
+  background:radial-gradient(circle at 38% 34%,#c8ffd6,#22c55e 42%,#087b35 100%) !important;
+}
+#reactionTap{
+  background:#152019 !important;
+  color:#ffffff !important;
+}
+#reactionTap.rg-go{
+  background:linear-gradient(145deg,#34df70,#0e8c3d) !important;
+  color:#ffffff !important;
+}
+
+/* Prevent old light-theme badges/callouts from becoming unreadable */
+.badge,.tag,.chip,.pill{
+  background:#1b2936 !important;
+  color:#eef3f8 !important;
+  border-color:#344858 !important;
+}
