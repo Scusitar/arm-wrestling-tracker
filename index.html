@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.17</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.18</b></p>
   </div>
 </header>
 
@@ -189,11 +189,11 @@
       <div class="reaction-settings table-timing-settings" aria-label="Table Practice timing settings">
         <h3>Timing</h3>
         <div class="reaction-setting">
-          <label for="tpReadyMin">Ready → Go minimum <output id="tpReadyMinValue">0.30 s</output></label>
+          <label for="tpReadyMin">Ready → Go gap minimum <output id="tpReadyMinValue">0.30 s</output></label>
           <input id="tpReadyMin" type="range" min="0.10" max="1.80" step="0.05" value="0.30">
         </div>
         <div class="reaction-setting">
-          <label for="tpReadyMax">Ready → Go maximum <output id="tpReadyMaxValue">1.00 s</output></label>
+          <label for="tpReadyMax">Ready → Go gap maximum <output id="tpReadyMaxValue">1.00 s</output></label>
           <input id="tpReadyMax" type="range" min="0.15" max="2.00" step="0.05" value="1.00">
         </div>
         <div class="reaction-setting">
@@ -205,6 +205,11 @@
           <input id="tpRoundMax" type="range" min="1.10" max="10.00" step="0.10" value="5.50">
         </div>
         <button type="button" id="tpTimingReset" class="timing-reset">Reset timing</button>
+        <div class="reaction-setting voice-speed-setting">
+          <label for="tpVoiceSpeed">Ready–Go voice speed <output id="tpVoiceSpeedValue">1.00×</output></label>
+          <input id="tpVoiceSpeed" type="range" min="0.80" max="1.50" step="0.05" value="1.00">
+          <span class="muted timing-help">Speeds up or slows down the recorded Ready and Go calls.</span>
+        </div>
       </div>
     </div>
 
@@ -214,6 +219,12 @@
   <div id="reactionReadyLight" class="reaction-light reaction-yellow" aria-label="Ready light"></div>
   <div id="reactionGoLight" class="reaction-light reaction-green" aria-label="Go light"></div>
 </div>
+
+<p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
+      <div class="reaction-controls">
+  <button type="button" id="reactionStart" class="reaction-start-button">START</button>
+  <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
+</div>
 <div class="reaction-settings" aria-label="Reaction game timing settings">
 <h3>Timing</h3>
 <div class="reaction-setting"><label for="rgReadyMin">Ready → Go minimum <output id="rgReadyMinValue">0.30 s</output></label><input id="rgReadyMin" type="range" min="0.10" max="1.80" step="0.05" value="0.30"></div>
@@ -221,11 +232,6 @@
 <div class="reaction-setting"><label for="rgRoundMin">Between-round minimum <output id="rgRoundMinValue">3.50 s</output></label><input id="rgRoundMin" type="range" min="1.00" max="8.00" step="0.10" value="3.50"></div>
 <div class="reaction-setting"><label for="rgRoundMax">Between-round maximum <output id="rgRoundMaxValue">5.50 s</output></label><input id="rgRoundMax" type="range" min="1.10" max="10.00" step="0.10" value="5.50"></div>
 <button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button>
-</div>
-<p id="reactionInstruction" class="big-stat" aria-live="polite">Press START, then wait for GO.</p>
-      <div class="reaction-controls">
-  <button type="button" id="reactionStart" class="reaction-start-button">START</button>
-  <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
 </div>
 <button type="button" id="reactionTap" class="reaction-tap-button" disabled>TAP TO STOP</button>
       <div class="two">
@@ -271,6 +277,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=470"></script>
+<script src="app.js?v=480"></script>
 </body>
 </html>

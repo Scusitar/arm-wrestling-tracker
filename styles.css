@@ -721,3 +721,8 @@ option{background:#0b121a !important;color:#fff !important}
 .table-timing-settings{margin-top:16px}
 .table-timing-settings h3{margin-top:0}
 .table-timing-settings .timing-reset{width:100%;margin-top:4px}
+
+/* v3.18: timing controls and Table Practice voice speed */
+.reaction-controls + .reaction-settings{margin-top:16px}
+.voice-speed-setting{margin-top:12px;padding-top:12px;border-top:1px solid #2b3b4b}
+.voice-speed-setting .timing-help{display:block;margin-top:4px;font-size:.85rem}
