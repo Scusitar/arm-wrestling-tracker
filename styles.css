@@ -842,3 +842,10 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-big-time{z-index:9999;align-items:center;justify-content:center;text-align:center}
 .reaction-big-time.show{animation:reactionBigPop .55s cubic-bezier(.16,1.4,.3,1)}
 .reaction-big-time strong{font-size:clamp(105px,25vw,250px)}
+
+/* v3.31: standalone opponent creation */
+.opponent-add-row{display:flex;gap:10px;align-items:stretch;margin-top:10px}
+.opponent-add-row input{flex:1;min-width:0}
+.opponent-add-row .primary{white-space:nowrap}
+#opponentAddMessage{min-height:1.3em;margin-top:8px}
+@media(max-width:600px){.opponent-add-row{flex-direction:column}.opponent-add-row .primary{width:100%}}

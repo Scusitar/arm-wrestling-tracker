@@ -1,8 +1,11 @@
 (()=>{"use strict";
 const KEY="armwrestle-pwa-v1";
-let state={matches:[],training:[]};
-try{state=JSON.parse(localStorage.getItem(KEY)||'{"matches":[],"training":[]}')}catch(e){}
-if(!Array.isArray(state.matches))state.matches=[];if(!Array.isArray(state.training))state.training=[];
+let state={matches:[],training:[],opponents:[]};
+try{state=JSON.parse(localStorage.getItem(KEY)||'{"matches":[],"training":[],"opponents":[]}')}catch(e){}
+if(!Array.isArray(state.matches))state.matches=[];
+if(!Array.isArray(state.training))state.training=[];
+if(!Array.isArray(state.opponents))state.opponents=[];
+state.matches.forEach(m=>{const n=String(m.opponent||"").trim();if(n&&!state.opponents.includes(n))state.opponents.push(n)});
 const $=id=>document.getElementById(id),save=()=>localStorage.setItem(KEY,JSON.stringify(state));
 const form={type:"Practice",arm:"Right",singleStrap:"No",side:"Left",result:"Win",go:"I hit first",myTech:"Not recorded",oppTech:"Not recorded",length:"Not recorded",trainingArm:"Both",quality:"Good"};
 let scope="Tournament",roundNumber=0,editingMatchId=null,editingTrainingId=null;
@@ -36,6 +39,20 @@ function loadMatchForEdit(id){const m=state.matches.find(x=>x.id===id);if(!m)ret
 function deleteMatch(id){if(!confirm("Delete this match? This cannot be undone."))return;state.matches=state.matches.filter(m=>m.id!==id);save();renderDashboard();renderHistory();renderOpponents()}
 function loadTrainingForEdit(id){const t=state.training.find(x=>x.id===id);if(!t)return;editingTrainingId=id;page("training");$("tCategory").value=t.category||"Pronation";$("sets").value=t.sets||"1";$("reps").value=t.reps||"1";$("resistance").value=t.resistance||"Bodyweight";$("intensity").value=t.intensity||"Easy";$("trainingComments").value=t.comments||"";setGroup("trainingArm","trainingArm",t.arm||"Both");setGroup("quality","quality",t.quality||"Good")}
 function deleteTraining(id){if(!confirm("Delete this training entry? This cannot be undone."))return;state.training=state.training.filter(t=>t.id!==id);save();renderDashboard();renderTraining()}
+
+function addOpponent(){
+ const input=$("newOpponentName"),msg=$("opponentAddMessage");
+ const name=(input?.value||"").trim();
+ if(!name){if(msg)msg.textContent="Enter an opponent name.";return}
+ const existing=state.opponents.find(n=>n.toLowerCase()===name.toLowerCase());
+ if(existing){if(msg)msg.textContent=`${existing} is already in your opponents.`;input?.focus();return}
+ state.opponents.push(name);
+ state.opponents.sort((a,b)=>a.localeCompare(b));
+ save();renderOpponents();
+ if(msg)msg.textContent=`${name} added.`;
+ if(input){input.value="";input.focus()}
+}
+
 
 
 const PERSONAL_VOICE_RATE=1.10;
@@ -421,6 +438,8 @@ function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.togg
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.page)));
 $("refreshApp")?.addEventListener("click",async()=>{try{if("serviceWorker" in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.update()}if("caches" in window){const keys=await caches.keys();for(const k of keys)await caches.delete(k)}}catch(e){}location.reload()});
 $("dashNewMatch")?.addEventListener("click",()=>page("match"));
+$("addOpponentBtn")?.addEventListener("click",addOpponent);
+$("newOpponentName")?.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addOpponent()}});
 for(let w=130;w<=500;w+=5){$("myWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`);$("oppWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`)}
 for(let h=48;h<=96;h++){const ft=Math.floor(h/12),inch=h%12,label=ft+"'"+inch+'"';$("myHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`);$("oppHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`)}
 for(let i=1;i<=10;i++)$("sets").insertAdjacentHTML("beforeend",`<option>${i}</option>`);
@@ -510,7 +529,7 @@ function renderHistory(){$("historyList").innerHTML=state.matches.map(m=>`<div c
 
 function renderTraining(){$("trainingList").innerHTML=state.training.slice(0,20).map(t=>`<div class="entry"><b>${esc(t.category)}</b><div class="muted">${esc(t.arm)} · ${esc(t.sets)} sets × ${esc(t.reps)} reps · ${esc(t.intensity)} · ${esc(t.quality)}</div>${t.comments?`<div style="margin-top:7px">${esc(t.comments)}</div>`:""}<div class="entry-actions"><button type="button" data-edit-training="${t.id}">Edit</button><button type="button" data-delete-training="${t.id}">Delete</button></div></div>`).join("")||'<p class="muted">No training logs yet.</p>';document.querySelectorAll("[data-edit-training]").forEach(b=>b.addEventListener("click",()=>loadTrainingForEdit(Number(b.dataset.editTraining))));document.querySelectorAll("[data-delete-training]").forEach(b=>b.addEventListener("click",()=>deleteTraining(Number(b.dataset.deleteTraining))))}
 
-function renderOpponents(){let names=[...new Set(state.matches.map(m=>m.opponent))].sort();$("opponentList").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");$("profiles").innerHTML=names.map(n=>{let ms=state.matches.filter(m=>m.opponent===n);return `<div class="entry" data-opponent="${esc(n)}" tabindex="0"><div class="row"><b>${esc(n)}</b><b>${rec(ms)[0]}–${rec(ms)[1]}</b></div><span class="tag">Practice ${rec(ms.filter(m=>m.matchType==="Practice")).join("–")}</span><span class="tag">Tournament ${rec(ms.filter(m=>m.matchType==="Tournament")).join("–")}</span><span class="tag">Supermatch ${rec(ms.filter(m=>m.matchType==="Supermatch")).join("–")}</span></div>`}).join("")||'<p class="muted">No opponents yet.</p>';document.querySelectorAll("#profiles [data-opponent]").forEach(x=>x.addEventListener("click",()=>showOpponent(x.dataset.opponent)))}
+function renderOpponents(){let names=[...new Set([...state.opponents,...state.matches.map(m=>m.opponent)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));state.opponents=names;$("opponentList").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");$("profiles").innerHTML=names.map(n=>{let ms=state.matches.filter(m=>m.opponent===n);return `<div class="entry" data-opponent="${esc(n)}" tabindex="0"><div class="row"><b>${esc(n)}</b><b>${rec(ms)[0]}–${rec(ms)[1]}</b></div><span class="tag">Practice ${rec(ms.filter(m=>m.matchType==="Practice")).join("–")}</span><span class="tag">Tournament ${rec(ms.filter(m=>m.matchType==="Tournament")).join("–")}</span><span class="tag">Supermatch ${rec(ms.filter(m=>m.matchType==="Supermatch")).join("–")}</span></div>`}).join("")||'<p class="muted">No opponents yet.</p>';document.querySelectorAll("#profiles [data-opponent]").forEach(x=>x.addEventListener("click",()=>showOpponent(x.dataset.opponent)))}
 function showOpponent(name){let ms=state.matches.filter(m=>m.opponent===name),weights=[...new Set(ms.map(m=>m.oppWeight).filter(Boolean))].sort((a,b)=>a-b);let heights=[...new Set(ms.map(m=>m.oppHeight).filter(Boolean))].sort((a,b)=>a-b);let sections=["Practice","Tournament","Supermatch"].map(type=>{let x=ms.filter(m=>m.matchType===type),r=rec(x),st=techniqueStats(x),best=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];return `<div class="rec"><b>${type}: ${r[0]}–${r[1]}</b><br><span class="muted">${best?"Best recorded technique: "+esc(best.k)+" · "+Math.round(best.w/best.n*100)+"%":"Not enough technique data"}</span></div>`}).join("");$("opponentDetail").classList.remove("hidden");$("opponentDetail").innerHTML=`<div class="row"><h2>${esc(name)}</h2><button id="closeOpp">Close</button></div><p><b>Weight history:</b> ${weights.length?weights.join(", ")+" lb":"Not recorded"}</p><p><b>Height history:</b> ${heights.length?heights.map(h=>Math.floor(h/12)+"\'"+(h%12)+"\"").join(", "):"Not recorded"}</p>${sections}`;$("closeOpp").addEventListener("click",()=>$("opponentDetail").classList.add("hidden"))}
 $("statScope")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{scope=b.dataset.value;$("statScope").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));renderDashboard()}));
 
