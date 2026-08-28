@@ -183,7 +183,7 @@ function rgPlayClip(kind,onStart,onEnd,token){
   a.onerror=()=>{if(token===rgCycleToken&&onEnd)onEnd()};
   a.play().catch(()=>{if(token===rgCycleToken&&onEnd)onEnd()});
 }
-function rgNextInterval(){return 3500+Math.random()*2000}
+function rgNextInterval(){return rgTimingDelay(rgTiming.roundMin,rgTiming.roundMax)}
 function rgReadyGoDelay(){return 50+Math.random()*150}
 function rgClear(){
   rgCycleToken++;
@@ -216,6 +216,26 @@ function rgStartTable(){
 }
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
 function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
+const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
+let rgTiming={...rgTimingDefault};
+function rgClampTiming(){
+ rgTiming.readyMin=Math.max(.10,Math.min(1.80,rgTiming.readyMin));
+ rgTiming.readyMax=Math.max(.15,Math.min(2.00,rgTiming.readyMax));
+ if(rgTiming.readyMax<rgTiming.readyMin)rgTiming.readyMax=rgTiming.readyMin;
+ rgTiming.roundMin=Math.max(1,Math.min(8,rgTiming.roundMin));
+ rgTiming.roundMax=Math.max(1.1,Math.min(10,rgTiming.roundMax));
+ if(rgTiming.roundMax<rgTiming.roundMin)rgTiming.roundMax=rgTiming.roundMin;
+}
+function rgUpdateTimingUI(){
+ rgClampTiming();
+ [["rgReadyMin","rgReadyMinValue",rgTiming.readyMin],["rgReadyMax","rgReadyMaxValue",rgTiming.readyMax],["rgRoundMin","rgRoundMinValue",rgTiming.roundMin],["rgRoundMax","rgRoundMaxValue",rgTiming.roundMax]].forEach(([id,out,val])=>{const e=$(id),o=$(out);if(e)e.value=val.toFixed(2);if(o)o.textContent=val.toFixed(2)+" s"});
+}
+function rgTimingDelay(min,max){return (min+Math.random()*(max-min))*1000}
+function rgBindTiming(){
+ [["rgReadyMin","readyMin"],["rgReadyMax","readyMax"],["rgRoundMin","roundMin"],["rgRoundMax","roundMax"]].forEach(([id,key])=>{const e=$(id);if(e)e.addEventListener("input",()=>{rgTiming[key]=parseFloat(e.value)||rgTimingDefault[key];rgUpdateTimingUI()})});
+ const r=$("rgTimingReset");if(r)r.addEventListener("click",()=>{rgTiming={...rgTimingDefault};rgUpdateTimingUI()});
+ rgUpdateTimingUI();
+}
 function reactionCycle(token){
   if(!rgRunning||token!==rgCycleToken)return;
   rgPhase="ready";rgGoAt=0;
@@ -232,7 +252,7 @@ function reactionCycle(token){
     rgBeep();
     $("reactionTap").disabled=false;$("reactionTap").textContent="TAP TO STOP";
     $("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");
-  },300+Math.random()*700);
+  },rgTimingDelay(rgTiming.readyMin,rgTiming.readyMax));
 }
 function reactionStart(){
   rgClear();rgRunning=true;rgPhase="ready";
@@ -367,6 +387,7 @@ function bindReadyGo(){
   if(reactionStartBtn)reactionStartBtn.addEventListener("click",reactionStart);
   if(reactionStopBtn)reactionStopBtn.addEventListener("click",reactionStop);
   if(reactionButton)reactionButton.addEventListener("click",reactionTap);
+  rgBindTiming();
 }
 try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){console.error("Tracker startup error:",e)}
 voiceLoad();

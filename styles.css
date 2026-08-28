@@ -635,3 +635,145 @@ th{color:#ffffff !important}
   color:#eef3f8 !important;
   border-color:#344858 !important;
 }
+
+.reaction-settings{margin:16px 0;padding:16px;background:#0c151e;border:1px solid #293a49;border-radius:14px}
+.reaction-settings h3{margin:0 0 14px}.reaction-setting{margin-bottom:14px}
+.reaction-setting label{display:flex;justify-content:space-between;gap:12px;align-items:center;color:#e9edf3!important;font-weight:700;margin-bottom:7px}
+.reaction-setting output{color:#66b8ff!important;white-space:nowrap}.reaction-setting input[type=range]{width:100%;accent-color:#3b9cff}
+.timing-reset{min-height:42px;padding:8px 16px}
+
+/* ===== v3.15: eliminate remaining pale boxes / improve contrast ===== */
+
+/* Technique cards and content tiles */
+.technique,
+.technique-card,
+.techniques,
+.techniques-grid,
+.technique-item,
+.move-card,
+.exercise-card,
+.drill-card,
+.training-card,
+.training-item,
+[data-technique],
+[class*="technique"],
+[class*="move-card"],
+[class*="drill-card"]{
+  background:#111923 !important;
+  color:#f1f5f9 !important;
+  border-color:#2b3b4b !important;
+}
+
+/* Make nested technique text readable even when legacy styles set a light
+   background or dark-on-light text. */
+.technique *,
+.technique-card *,
+.techniques *,
+.techniques-grid *,
+.technique-item *,
+.move-card *,
+.exercise-card *,
+.drill-card *,
+.training-card *,
+.training-item{
+  color:#e9edf2 !important;
+  background-color:transparent !important;
+}
+.technique h1,.technique h2,.technique h3,.technique h4,
+.technique-card h1,.technique-card h2,.technique-card h3,.technique-card h4,
+[class*="technique"] h1,[class*="technique"] h2,[class*="technique"] h3,
+[class*="technique"] h4{
+  color:#ffffff !important;
+}
+.technique p,.technique-card p,[class*="technique"] p{
+  color:#b8c2cd !important;
+}
+
+/* Reaction Game statistics/results */
+#reactionAttempts,
+#reactionBest,
+#reactionAvg,
+#reactionLast{
+  color:#ffffff !important;
+}
+.reaction-stats,
+.reaction-stat,
+.reaction-results,
+.reaction-result,
+.reaction-history,
+.reaction-game-stats,
+[class*="reaction-stat"],
+[class*="reaction-result"],
+[class*="reaction-history"]{
+  background:#101923 !important;
+  color:#f1f5f9 !important;
+  border-color:#2b3b4b !important;
+}
+.reaction-stats *,
+.reaction-stat *,
+.reaction-results *,
+.reaction-result *,
+.reaction-history *,
+.reaction-game-stats *,
+[class*="reaction-stat"] *,
+[class*="reaction-result"] *,
+[class*="reaction-history"] *{
+  background-color:transparent !important;
+  color:#e9edf2 !important;
+}
+.reaction-stats strong,
+.reaction-stat strong,
+.reaction-results strong,
+.reaction-result strong,
+.reaction-game-stats strong{
+  color:#ffffff !important;
+}
+
+/* Generic small tiles that commonly retain the original white background */
+.tile,
+.info-tile,
+.result-tile,
+.metric,
+.metric-card,
+.summary-card,
+.summary-item,
+.data-card,
+.list-card,
+.item-card{
+  background:#111923 !important;
+  color:#e9edf2 !important;
+  border-color:#2b3b4b !important;
+}
+.tile *,
+.info-tile *,
+.result-tile *,
+.metric *,
+.metric-card *,
+.summary-card *,
+.summary-item *,
+.data-card *,
+.list-card *,
+.item-card *{
+  background-color:transparent !important;
+  color:#e9edf2 !important;
+}
+
+/* Inline legacy white backgrounds */
+[style*="background: white"],
+[style*="background:white"],
+[style*="background-color: white"],
+[style*="background-color:white"],
+[style*="background:#fff"],
+[style*="background:#ffffff"]{
+  background:#111923 !important;
+  color:#e9edf2 !important;
+}
+
+/* Preserve colored controls/lights where nested generic rules could interfere */
+.reaction-light.reaction-yellow.on,
+.reaction-light.reaction-green.on,
+.reaction-start-button,
+.reaction-stop-button,
+#reactionTap.rg-go{
+  color:#ffffff !important;
+}
