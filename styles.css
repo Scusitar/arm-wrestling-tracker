@@ -7,3 +7,8 @@
 #reactionTap{font-size:1.35rem;min-height:72px;margin:12px 0}.big-stat{font-size:1.4rem;font-weight:700;min-height:34px}
 
 .reaction-main-button{display:block;width:180px;height:180px;margin:16px auto;border-radius:50%;border:3px solid #8b0000;background:#d71920;color:#fff;font-size:1.35rem;font-weight:800;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.18)}.reaction-main-button:active{transform:scale(.97)}.reaction-main-button:disabled{opacity:.7}
+
+.reaction-main-button{display:block;width:180px;height:180px;margin:16px auto;border-radius:50%;border:3px solid #16803c;background:#20a852;color:#fff;font-size:1.35rem;font-weight:800;touch-action:manipulation;box-shadow:0 4px 0 rgba(0,0,0,.18);transition:transform .08s,opacity .12s}.reaction-main-button.rg-start{background:#20a852;border-color:#16803c}.reaction-main-button.rg-wait{background:#20a852;border-color:#16803c}.reaction-main-button.rg-go{background:#d71920;border-color:#8b0000}.reaction-main-button:active{transform:scale(.97)}.reaction-main-button:disabled{opacity:.72}
+.rg-stop{border-radius:50%;background:#d71920!important;border-color:#8b0000!important;color:#fff!important;min-width:82px;min-height:82px;font-weight:800}
+
+#reactionStop{border-radius:50%;background:#d71920;color:#fff;border:3px solid #8b0000;width:82px;height:82px;font-weight:800}
