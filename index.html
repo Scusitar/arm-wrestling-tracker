@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v2.1</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v2.2</b></p>
   </div>
 </header>
 
@@ -180,9 +180,9 @@
     <div id="tableReadyGo">
       <h3>Table Practice</h3>
       <p id="rgInstruction" class="big-stat" aria-live="polite">Press START when you're ready.</p>
-      <div class="row">
-        <button type="button" class="primary" id="rgStart">START</button>
-        <button type="button" id="rgStop" disabled>STOP</button>
+      <div class="row rg-controls">
+        <button type="button" class="rg-start-button" id="rgStart">START</button>
+        <button type="button" class="rg-stop-button" id="rgStop" disabled>STOP</button>
       </div>
       <p class="muted">Ready → Go pause: randomized from 0.35–1.00 seconds. Time between starts: randomized from 2.8–4.0 seconds.</p>
     </div>
@@ -208,6 +208,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=210"></script>
+<script src="app.js?v=220"></script>
 </body>
 </html>
