@@ -309,7 +309,7 @@ function reactionRender(){
 }
 
 
-const tpTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
+const tpTimingDefault={readyMin:0.30,readyMax:1.55,roundMin:2.50,roundMax:7.80};
 let tpTiming={...tpTimingDefault};
 function tpClampTiming(){
  tpTiming.readyMin=Math.max(.10,Math.min(1.80,tpTiming.readyMin));
