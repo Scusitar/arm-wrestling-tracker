@@ -731,3 +731,24 @@ option{background:#0b121a !important;color:#fff !important}
 .reaction-tap-button + .reaction-settings{margin-top:16px}
 .round-speed-setting{border-top:1px solid #2b3b4b;padding-top:12px;margin-top:12px}
 .round-speed-setting .timing-help{display:block;margin-top:4px;font-size:.85rem}
+
+/* v3.20 Reaction Game polish */
+.reaction-stats-block{margin:18px 0 4px}
+.reaction-stats-block h3{margin:0 0 10px}
+.reaction-last10{margin-top:14px}
+.reaction-last10 h4{margin:0 0 8px;color:#b8c5d2}
+.last10-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+.last10-time{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:9px 11px;border-radius:10px;background:#17222e;border:1px solid #2b3b4b}
+.last10-time b{color:#91a1b1;font-size:.85rem}
+.last10-time strong{color:#fff;font-size:1rem}
+.reaction-time-pop{
+  animation:reactionTimePop .55s cubic-bezier(.2,1.5,.35,1);
+  color:#fff !important;text-shadow:0 0 16px rgba(72,234,126,.65);
+}
+@keyframes reactionTimePop{
+  0%{transform:scale(.72);opacity:.15}
+  45%{transform:scale(1.22);opacity:1}
+  70%{transform:scale(.96)}
+  100%{transform:scale(1);opacity:1}
+}

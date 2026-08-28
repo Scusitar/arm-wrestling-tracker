@@ -215,7 +215,15 @@ function rgStartTable(){
   const token=rgCycleToken;rgTimer=setTimeout(()=>rgScheduleTable(token),100);
 }
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
-function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
+function reactionRender(){
+ const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;
+ $("reactionAttempts").textContent=a.length;
+ $("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";
+ $("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";
+ $("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—";
+ const last10=$("reactionLast10");
+ if(last10)last10.innerHTML=a.slice(-10).reverse().map((t,i)=>`<span class="last10-time"><b>${a.length-i}</b><strong>${t.toFixed(0)} ms</strong></span>`).join("")||"No times yet.";
+}
 const tpRoundSpeedDefault=1.00;
 let tpRoundSpeed=tpRoundSpeedDefault;
 function tpUpdateRoundSpeedUI(){
@@ -287,14 +295,14 @@ function tpNextInterval(){
  return rgTimingDelay(t.roundMin/tpRoundSpeed,t.roundMax/tpRoundSpeed);
 }
 
-const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:3.50,roundMax:5.50};
+const rgTimingDefault={readyMin:.30,readyMax:1.00,roundMin:5.00,roundMax:8.00};
 let rgTiming={...rgTimingDefault};
 function rgClampTiming(){
  rgTiming.readyMin=Math.max(.10,Math.min(1.80,rgTiming.readyMin));
  rgTiming.readyMax=Math.max(.15,Math.min(2.00,rgTiming.readyMax));
  if(rgTiming.readyMax<rgTiming.readyMin)rgTiming.readyMax=rgTiming.readyMin;
- rgTiming.roundMin=Math.max(1,Math.min(8,rgTiming.roundMin));
- rgTiming.roundMax=Math.max(1.1,Math.min(10,rgTiming.roundMax));
+ rgTiming.roundMin=Math.max(2,Math.min(12,rgTiming.roundMin));
+ rgTiming.roundMax=Math.max(2.1,Math.min(15,rgTiming.roundMax));
  if(rgTiming.roundMax<rgTiming.roundMin)rgTiming.roundMax=rgTiming.roundMin;
 }
 function rgUpdateTimingUI(){
@@ -346,12 +354,26 @@ function reactionTap(){
   rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();
   rgGoAt=0;rgPhase="idle";rgSetLights(false,false);
   $("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go");$("reactionTap").classList.add("rg-wait");
-  $("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";$("falseStart").textContent="";
+  $("reactionTap").textContent="WAIT FOR GO";
+  $("reactionInstruction").textContent=t.toFixed(0)+" ms";
+  $("falseStart").textContent="";
+  const result=$("reactionInstruction");
+  result.classList.remove("reaction-time-pop");
+  void result.offsetWidth;
+  result.classList.add("reaction-time-pop");
   reactionRender();
   rgTimer=setTimeout(()=>{if(rgRunning){const token=rgCycleToken;reactionCycle(token)}},500);
 }
 
-function setReadyGoMode(v){rgMode=v;$("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));$("tableReadyGo").classList.toggle("hidden",v!=="table");$("reactionReadyGo").classList.toggle("hidden",v!=="reaction");rgClear()}
+function setReadyGoMode(v){
+ rgMode=v;
+ $("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));
+ $("tableReadyGo").classList.toggle("hidden",v!=="table");
+ $("reactionReadyGo").classList.toggle("hidden",v!=="reaction");
+ const voiceCard=$("voiceSetupCard");
+ if(voiceCard)voiceCard.classList.toggle("hidden",v==="reaction");
+ rgClear();
+}
 function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="dashboard")renderDashboard();if(id==="history")renderHistory();if(id==="opponents")renderOpponents();if(id==="training")renderTraining()}
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.page)));
 $("refreshApp")?.addEventListener("click",async()=>{try{if("serviceWorker" in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.update()}if("caches" in window){const keys=await caches.keys();for(const k of keys)await caches.delete(k)}}catch(e){}location.reload()});

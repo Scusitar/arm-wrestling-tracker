@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.19</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.20</b></p>
   </div>
 </header>
 
@@ -231,26 +231,34 @@
   <button type="button" id="reactionStop" class="reaction-stop-button" disabled>STOP</button>
 </div>
 <button type="button" id="reactionTap" class="reaction-tap-button" disabled>TAP TO STOP</button>
+<div class="reaction-stats-block">
+        <h3>Reaction Stats</h3>
+        <div class="two">
+          <div class="rec"><b>Best</b><br><span id="reactionBest">—</span></div>
+          <div class="rec"><b>Average</b><br><span id="reactionAvg">—</span></div>
+          <div class="rec"><b>Attempts</b><br><span id="reactionAttempts">0</span></div>
+          <div class="rec"><b>Last</b><br><span id="reactionLast">—</span></div>
+        </div>
+        <div class="reaction-last10">
+          <h4>Last 10 Times</h4>
+          <div id="reactionLast10" class="last10-list" aria-live="polite">No times yet.</div>
+        </div>
+      </div>
 <div class="reaction-settings" aria-label="Reaction game timing settings">
 <h3>Timing</h3>
 <div class="reaction-setting"><label for="rgReadyMin">Between Ready and Go minimum <output id="rgReadyMinValue">0.30 s</output></label><input id="rgReadyMin" type="range" min="0.10" max="1.80" step="0.05" value="0.30"></div>
 <div class="reaction-setting"><label for="rgReadyMax">Between Ready and Go maximum <output id="rgReadyMaxValue">1.00 s</output></label><input id="rgReadyMax" type="range" min="0.15" max="2.00" step="0.05" value="1.00"></div>
-<div class="reaction-setting"><label for="rgRoundMin">Between-round minimum <output id="rgRoundMinValue">3.50 s</output></label><input id="rgRoundMin" type="range" min="1.00" max="8.00" step="0.10" value="3.50"></div>
-<div class="reaction-setting"><label for="rgRoundMax">Between-round maximum <output id="rgRoundMaxValue">5.50 s</output></label><input id="rgRoundMax" type="range" min="1.10" max="10.00" step="0.10" value="5.50"></div>
+<div class="reaction-setting"><label for="rgRoundMin">Between-round minimum <output id="rgRoundMinValue">5.00 s</output></label><input id="rgRoundMin" type="range" min="2.00" max="12.00" step="0.10" value="5.00"></div>
+<div class="reaction-setting"><label for="rgRoundMax">Between-round maximum <output id="rgRoundMaxValue">8.00 s</output></label><input id="rgRoundMax" type="range" min="2.10" max="15.00" step="0.10" value="8.00"></div>
 <button type="button" id="rgTimingReset" class="timing-reset">Reset timing</button>
 </div>
 
-      <div class="two">
-        <div class="rec"><b>Best</b><br><span id="reactionBest">—</span></div>
-        <div class="rec"><b>Average</b><br><span id="reactionAvg">—</span></div>
-        <div class="rec"><b>Attempts</b><br><span id="reactionAttempts">0</span></div>
-        <div class="rec"><b>Last</b><br><span id="reactionLast">—</span></div>
-      </div>
+      
       <p id="falseStart" class="muted" aria-live="polite"></p>
       <div class="row"></div>
     </div>
   </article>
-<article class="card voice-setup-card">
+<article id="voiceSetupCard" class="card voice-setup-card">
   <h2>🎙️ Voice Setup</h2>
   <p class="muted">Record and manage your 10 Ready and 10 Go calls. Your recordings stay on this device.</p>
 <div class="segmented" id="voiceType">
@@ -283,6 +291,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=490"></script>
+<script src="app.js?v=500"></script>
 </body>
 </html>
