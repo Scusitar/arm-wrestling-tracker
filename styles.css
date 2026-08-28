@@ -760,3 +760,17 @@ option{background:#0b121a !important;color:#fff !important}
 /* v3.22 Match penalties */
 .match-penalties{margin-top:4px}
 .match-penalties input{font-size:16px}
+
+/* v3.23: 0/1/2 penalty buttons */
+.penalty-buttons{display:flex;gap:8px;margin-top:6px}
+.penalty-btn{
+  flex:1;min-height:44px;border-radius:10px !important;
+  background:#17222e !important;color:#dce5ed !important;
+  border:1px solid #405466 !important;font-weight:800 !important;
+}
+.penalty-btn.selected{
+  background:linear-gradient(145deg,#3b9cff,#1557b0) !important;
+  color:#fff !important;border-color:#66b8ff !important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.2),0 4px 12px rgba(0,0,0,.28) !important;
+}
+.penalty-btn:active{transform:translateY(1px)}

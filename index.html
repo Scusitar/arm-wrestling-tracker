@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#2563eb">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=174">
+<link rel="stylesheet" href="styles.css?v=175">
 <title>Arm Wrestling Tracker</title>
 </head>
 <body>
@@ -13,7 +13,7 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v3.22</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v3.23</b></p>
   </div>
 </header>
 
@@ -113,8 +113,22 @@
       </select></label>
 
       <div class="two match-penalties">
-        <label>Number of fouls<input id="matchFouls" type="number" min="0" step="1" value="0" inputmode="numeric"></label>
-        <label>Number of warnings<input id="matchWarnings" type="number" min="0" step="1" value="0" inputmode="numeric"></label>
+        <div>
+          <label>Number of fouls</label>
+          <div class="penalty-buttons" id="matchFouls" role="group" aria-label="Number of fouls">
+            <button type="button" data-value="0" class="selected penalty-btn penalty-0">0</button>
+            <button type="button" data-value="1" class="penalty-btn penalty-1">1</button>
+            <button type="button" data-value="2" class="penalty-btn penalty-2">2</button>
+          </div>
+        </div>
+        <div>
+          <label>Number of warnings</label>
+          <div class="penalty-buttons" id="matchWarnings" role="group" aria-label="Number of warnings">
+            <button type="button" data-value="0" class="selected penalty-btn penalty-0">0</button>
+            <button type="button" data-value="1" class="penalty-btn penalty-1">1</button>
+            <button type="button" data-value="2" class="penalty-btn penalty-2">2</button>
+          </div>
+        </div>
       </div>
 
       <div id="singleFields">
@@ -297,6 +311,6 @@
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=520"></script>
+<script src="app.js?v=530"></script>
 </body>
 </html>
