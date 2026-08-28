@@ -327,3 +327,168 @@ button:disabled{
 .reaction-light *{
   color:transparent !important;
 }
+
+/* ===== v3.12 Refined Color Theme ===== */
+:root{
+  --bg:#080b10;
+  --panel:#10161e;
+  --panel2:#141c26;
+  --panel3:#192330;
+  --border:#293747;
+  --border-soft:#202b38;
+  --text:#f7f9fc;
+  --muted:#aeb8c5;
+  --blue:#3b9cff;
+  --blue-dark:#1674d2;
+  --green:#22c55e;
+  --green-dark:#12823b;
+  --red:#ef4444;
+  --red-dark:#ad2525;
+  --yellow:#f5c542;
+}
+
+/* Warm charcoal base with restrained blue accents */
+html,body,main,#app,.page,section{
+  background:
+    radial-gradient(circle at 85% 5%,rgba(59,156,255,.10),transparent 30%),
+    radial-gradient(circle at 8% 65%,rgba(34,197,94,.045),transparent 25%),
+    var(--bg) !important;
+  color:var(--text) !important;
+}
+
+.card,.panel,.section,.match-card,.training-card,
+.voice-setup-card,[class*="card"],[class*="panel"]{
+  background:linear-gradient(145deg,#141c26,#0e141c) !important;
+  border:1px solid var(--border) !important;
+  color:var(--text) !important;
+  box-shadow:0 12px 32px rgba(0,0,0,.28);
+}
+
+/* Subtle color stripe on major cards */
+.card,.panel,.section,.match-card,.training-card{
+  position:relative;
+  overflow:hidden;
+}
+.card::before,.panel::before,.section::before,.match-card::before,.training-card::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;right:0;
+  height:2px;
+  background:linear-gradient(90deg,rgba(59,156,255,.8),rgba(59,156,255,.05));
+  pointer-events:none;
+}
+
+h1,h2,h3,h4,h5,h6{color:#fff !important}
+p,span,div,label,small,strong,b{color:#e9edf3}
+.muted,.card .muted,.panel .muted,.section .muted{color:var(--muted) !important}
+
+/* Navigation */
+.tabs button,
+nav button{
+  background:#111923 !important;
+  border:1px solid #2a3949 !important;
+  color:#e8edf4 !important;
+}
+.tabs button.active,
+button.active,
+button[aria-selected="true"]{
+  background:linear-gradient(180deg,#2694ed,#176fc0) !important;
+  border-color:#42a9ff !important;
+  color:#fff !important;
+}
+
+/* General controls */
+button{
+  background:linear-gradient(180deg,#1a2531,#111923) !important;
+  border:1px solid #344555 !important;
+  color:#f7f9fc !important;
+}
+button:hover{
+  border-color:#4a6276 !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+input,select,textarea{
+  background:#0a1017 !important;
+  color:#fff !important;
+  border:1px solid #304253 !important;
+}
+input:focus,select:focus,textarea:focus{
+  border-color:#3b9cff !important;
+  box-shadow:0 0 0 3px rgba(59,156,255,.13) !important;
+}
+
+/* Stat tiles: dark, readable, with small color accents */
+.stat,.stat-card,[class*="stat"]{
+  background:linear-gradient(145deg,#18212c,#101720) !important;
+  border:1px solid #2a3a4a !important;
+  color:#fff !important;
+}
+.stat::before,.stat-card::before,[class*="stat"]::before{
+  background:linear-gradient(90deg,#3b9cff,#3b9cff22) !important;
+}
+.stat *, .stat-card *, [class*="stat"] *{color:#edf2f7 !important}
+
+/* Positive result indicators */
+.win,.success,.positive,[class*="win"],[class*="success"]{
+  color:#5eea8a !important;
+}
+
+/* Reaction controls */
+.reaction-controls{gap:22px !important}
+.reaction-start-button,.reaction-stop-button{
+  width:98px !important;height:98px !important;
+  color:#fff !important;font-weight:900 !important;
+  border-radius:50% !important;
+}
+.reaction-start-button{
+  background:linear-gradient(145deg,#31d66c,#11833b) !important;
+  border:3px solid #45e77d !important;
+  box-shadow:0 0 22px rgba(34,197,94,.20),0 8px 22px rgba(0,0,0,.42) !important;
+}
+.reaction-stop-button{
+  background:linear-gradient(145deg,#ff5a5a,#b91f28) !important;
+  border:3px solid #ff6969 !important;
+  box-shadow:0 0 22px rgba(239,68,68,.20),0 8px 22px rgba(0,0,0,.42) !important;
+}
+.reaction-start-button:hover{box-shadow:0 0 28px rgba(34,197,94,.38),0 8px 22px rgba(0,0,0,.42) !important}
+.reaction-stop-button:hover{box-shadow:0 0 28px rgba(239,68,68,.38),0 8px 22px rgba(0,0,0,.42) !important}
+
+#reactionTap{
+  background:linear-gradient(145deg,#17231d,#101812) !important;
+  border:3px solid #327545 !important;
+  color:#f8fff9 !important;
+}
+#reactionTap.rg-go{
+  background:linear-gradient(145deg,#34df70,#0e8c3d) !important;
+  border-color:#71f89a !important;
+  color:#fff !important;
+  box-shadow:0 0 20px rgba(34,197,94,.65),0 0 48px rgba(34,197,94,.30) !important;
+}
+
+/* Ready/Go lights */
+.reaction-lights{
+  background:#0a1017 !important;
+  border:1px solid #263645 !important;
+}
+.reaction-light{
+  background:#151d26 !important;
+  border-color:#2c3946 !important;
+}
+.reaction-light.reaction-yellow.on{
+  background:radial-gradient(circle at 38% 34%,#fff7ad,#f5c542 42%,#d58d12 100%) !important;
+  border-color:#ffe36b !important;
+  box-shadow:0 0 18px #f5c542,0 0 48px rgba(245,197,66,.55) !important;
+}
+.reaction-light.reaction-green.on{
+  background:radial-gradient(circle at 38% 34%,#c8ffd6,#22c55e 42%,#087b35 100%) !important;
+  border-color:#8affaa !important;
+  box-shadow:0 0 18px #22c55e,0 0 52px rgba(34,197,94,.60) !important;
+}
+
+/* Keep warning/info boxes colored but readable */
+.info,.notice,.callout,.analytics-card,
+[class*="analytics"],[class*="notice"],[class*="callout"]{
+  background:#102033 !important;
+  border-color:#28445e !important;
+  color:#edf6ff !important;
+}
