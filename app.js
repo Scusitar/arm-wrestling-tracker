@@ -215,7 +215,7 @@ function setReactionMethod(v){
   else stopMotionDetection();
 }
 function motionMagnitude(e){
-  const a=e.acceleration;
+  const a=e.accelerationIncludingGravity||e.acceleration;
   if(!a)return 0;
   return Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
 }
@@ -244,7 +244,7 @@ function reactionMotionHandler(e){
   if(motionBaseline===null){motionBaseline=mag;return}
   const delta=Math.abs(mag-motionBaseline);
   motionBaseline=motionBaseline*.9+mag*.1;
-  if(!motionTriggered && rgGoAt>0 && delta>=1.15){
+  if(!motionTriggered && rgGoAt>0 && delta>=1.00){
     motionTriggered=true;
     reactionRecord(performance.now()-rgGoAt);
   }
@@ -565,3 +565,4 @@ bindReadyGo();
 bindVoice();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=172").catch(()=>{});
 })();
+$("reactionStop")?.addEventListener("click",()=>{rgClear();$("reactionInstruction").textContent="Press START when you are ready.";});
