@@ -119,6 +119,99 @@ function voiceWaveStop(){
   voiceAudioCtx=null;
   const c=$("voiceWave");if(c)c.style.display="none";
 }
+async function voiceTrimBlob(blob){
+  if(!blob||!blob.size)return blob;
+  let ctx=null;
+  try{
+    const AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return blob;
+    ctx=new AC();
+    const raw=await blob.arrayBuffer();
+    const audio=await ctx.decodeAudioData(raw.slice(0));
+    const sr=audio.sampleRate, channels=audio.numberOfChannels, len=audio.length;
+    const frame=Math.max(1,Math.floor(sr*.025)), hop=Math.max(1,Math.floor(sr*.010));
+    const threshold=.008;
+    let first=-1,last=-1;
+    for(let start=0;start<len;start+=hop){
+      const end=Math.min(len,start+frame);
+      let sum=0,count=0;
+      for(let ch=0;ch<channels;ch++){
+        const data=audio.getChannelData(ch);
+        for(let i=start;i<end;i+=2){const v=data[i]||0;sum+=v*v;count++}
+      }
+      const rms=Math.sqrt(sum/Math.max(1,count));
+      if(rms>=threshold){if(first<0)first=start;last=end}
+    }
+    if(first<0)return blob;
+    const pad=Math.floor(sr*.08);
+    first=Math.max(0,first-pad);last=Math.min(len,last+pad);
+    if(first===0&&last===len)return blob;
+
+    // Store voice as compact mono 22.05 kHz PCM WAV. This keeps the words
+    // clear while using much less localStorage than uncompressed 48 kHz audio.
+    const outRate=Math.min(22050,sr), ratio=sr/outRate;
+    const outSamples=Math.max(1,Math.floor((last-first)/ratio));
+    const buffer=new ArrayBuffer(44+outSamples*2), view=new DataView(buffer);
+    const ws=(off,s)=>{for(let i=0;i<s.length;i++)view.setUint8(off+i,s.charCodeAt(i))};
+    ws(0,"RIFF");view.setUint32(4,36+outSamples*2,true);ws(8,"WAVE");
+    ws(12,"fmt ");view.setUint32(16,16,true);view.setUint16(20,1,true);
+    view.setUint16(22,1,true);view.setUint32(24,outRate,true);view.setUint32(28,outRate*2,true);
+    view.setUint16(32,2,true);view.setUint16(34,16,true);ws(36,"data");view.setUint32(40,outSamples*2,true);
+    const chans=Array.from({length:channels},(_,ch)=>audio.getChannelData(ch));
+    for(let j=0;j<outSamples;j++){
+      const pos=first+j*ratio,i0=Math.floor(pos),frac=pos-i0;
+      let sample=0;
+      for(let ch=0;ch<channels;ch++){
+        const d=chans[ch],a=d[Math.min(i0,len-1)]||0,b=d[Math.min(i0+1,len-1)]||a;
+        sample+=a+(b-a)*frac;
+      }
+      sample/=channels;sample=Math.max(-1,Math.min(1,sample));
+      view.setInt16(44+j*2,sample<0?sample*32768:sample*32767,true);
+    }
+    return new Blob([buffer],{type:"audio/wav"});
+  }catch(e){
+    return blob;
+  }finally{
+    try{await ctx?.close()}catch(e){}
+  }
+}
+function voiceDataUrlToBlob(data){
+  try{
+    if(typeof data!=="string")return data;
+    const parts=data.split(",");
+    const mime=(parts[0].match(/data:([^;]+)/)||[])[1]||"audio/wav";
+    const bin=atob(parts[1]||""),arr=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+    return new Blob([arr],{type:mime});
+  }catch(e){return null}
+}
+function voiceBlobToDataUrl(blob){
+  return new Promise((resolve,reject)=>{
+    const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);
+  });
+}
+async function voiceTrimAll(){
+  const status=$("voiceTrimStatus");
+  if(status)status.textContent="Trimming saved recordings…";
+  let total=0;
+  try{
+    for(const kind of ["ready","go"]){
+      for(let i=0;i<10;i++){
+        const data=voiceDB[kind][i];
+        if(!data)continue;
+        const blob=voiceDataUrlToBlob(data);
+        if(!blob)continue;
+        const trimmed=await voiceTrimBlob(blob);
+        voiceDB[kind][i]=await voiceBlobToDataUrl(trimmed);
+        total++;
+      }
+    }
+    voiceSave();voiceUpdate();
+    if(status)status.textContent=total?`Trimmed ${total} saved recording${total===1?"":"s"}.`:"No saved recordings to trim.";
+  }catch(e){
+    if(status)status.textContent="Trimming could not finish. Your saved recordings were kept.";
+  }
+}
 async function voiceRecord(){
   try{
     if(!window.isSecureContext){$("voiceStatus").textContent="Open the GitHub Pages HTTPS address to record.";return}
@@ -132,9 +225,10 @@ async function voiceRecord(){
     voiceRecorder=mime?new MediaRecorder(voiceStream,{mimeType:mime}):new MediaRecorder(voiceStream);
     voiceRecorder.ondataavailable=e=>{if(e.data&&e.data.size)voiceChunks.push(e.data)};
     voiceRecorder.onerror=e=>{$("voiceStatus").textContent="Recording error. Please try again.";try{voiceStop()}catch(_){}};
-    voiceRecorder.onstop=()=>{
+    voiceRecorder.onstop=async()=>{
       const type=voiceRecorder.mimeType||mime||"audio/webm";
       voiceCurrentBlob=new Blob(voiceChunks,{type});
+      voiceCurrentBlob=await voiceTrimBlob(voiceCurrentBlob);
       voiceWaveStop();voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;
       voiceRecorder=null;
       $("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording");
@@ -533,7 +627,7 @@ function bindReadyGo(){
 }
 try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){}
 voiceLoad();
-function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);voiceUpdate()}
+function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);$("voiceTrimAll")?.addEventListener("click",voiceTrimAll);voiceUpdate()}
 bindReadyGo();
 bindVoice();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=760").catch(()=>{});
