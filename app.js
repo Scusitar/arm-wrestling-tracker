@@ -17,6 +17,7 @@ function loadTrainingForEdit(id){const t=state.training.find(x=>x.id===id);if(!t
 function deleteTraining(id){if(!confirm("Delete this training entry? This cannot be undone."))return;state.training=state.training.filter(t=>t.id!==id);save();renderDashboard();renderTraining()}
 function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="dashboard")renderDashboard();if(id==="history")renderHistory();if(id==="opponents")renderOpponents();if(id==="training")renderTraining()}
 document.querySelectorAll(".tabs button").forEach(b=>b.addEventListener("click",()=>page(b.dataset.page)));
+$("refreshApp").addEventListener("click",async()=>{try{if("serviceWorker" in navigator){const regs=await navigator.serviceWorker.getRegistrations();for(const r of regs)await r.update()}if("caches" in window){const keys=await caches.keys();for(const k of keys)await caches.delete(k)}}catch(e){}location.reload()});
 $("dashNewMatch").addEventListener("click",()=>page("match"));
 for(let w=130;w<=500;w+=5){$("myWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`);$("oppWeight").insertAdjacentHTML("beforeend",`<option value="${w}">${w} lb</option>`)}
 for(let h=48;h<=96;h++){const ft=Math.floor(h/12),inch=h%12,label=ft+"'"+inch+'"';$("myHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`);$("oppHeight").insertAdjacentHTML("beforeend",`<option value="${h}">${label}</option>`)}
