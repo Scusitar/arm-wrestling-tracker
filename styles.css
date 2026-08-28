@@ -684,3 +684,35 @@ th{color:#ffffff !important}
 [style*="background:#fff"],[style*="background:#ffffff"]{
   background:#111923 !important;color:#e9edf2 !important;
 }
+
+/* ===== v3.16 COMPLETE DARK-SURFACE CLEANUP ===== */
+.card,.stats article,.rec,.entry,.round,.voice-card,.voice-library-status,
+.notice,.table-wrap,.tech-table,.tech-table th,.tech-table td,
+.reaction-settings,.reaction-stats,.reaction-stat,.reaction-results,
+.reaction-result,.reaction-history,.reaction-game-stats{
+  background:#111923 !important;color:#e9edf2 !important;border-color:#2b3b4b !important;
+}
+.card .rec,.card .entry,.card .round,.card .voice-card,
+.card .voice-library-status,.card .notice,.card .reaction-stat,.card .reaction-result{
+  background:#17222e !important;color:#e9edf2 !important;
+}
+.rec *,.entry *,.round *,.voice-card *,.voice-library-status *,
+.notice *,.reaction-stat *,.reaction-result *,.reaction-stats *,
+.reaction-results *,.reaction-history *,.reaction-game-stats *{
+  background:transparent !important;color:#e9edf2 !important;
+}
+.rec b,.entry b,.round h3,.voice-card h3,.reaction-stat b,.reaction-result b{color:#fff !important}
+.stats article{background:linear-gradient(145deg,#17222e,#101821) !important}
+.stats article span{color:#aeb9c5 !important}.stats article b{color:#fff !important}
+.tech-table th,.tech-table td{background:#111923 !important;color:#e9edf2 !important;border-bottom-color:#2b3b4b !important}
+.tech-table th{color:#aeb9c5 !important}
+.voice-card{background:#121c26 !important;border-color:#304151 !important}
+.voice-wave{background:#0a1118 !important;border-color:#304151 !important}
+input,select,textarea{background:#080f16 !important;color:#fff !important;border-color:#34495c !important}
+option{background:#0b121a !important;color:#fff !important}
+.notice,.voice-library-status{background:#102235 !important;color:#edf6ff !important;border:1px solid #294963 !important}
+#rgStart.rg-start-button{background:linear-gradient(145deg,#35dc70,#11843b) !important;color:#fff !important;border:3px solid #48ea7e !important;box-shadow:0 0 20px rgba(34,197,94,.22),0 7px 18px rgba(0,0,0,.38) !important}
+#rgStop.rg-stop-button{background:linear-gradient(145deg,#ff5b5b,#b51f29) !important;color:#fff !important;border:3px solid #ff7070 !important;box-shadow:0 0 20px rgba(239,68,68,.22),0 7px 18px rgba(0,0,0,.38) !important}
+#reactionStart.reaction-start-button{background:linear-gradient(145deg,#35dc70,#11843b) !important;color:#fff !important;border:3px solid #48ea7e !important}
+#reactionStop.reaction-stop-button{background:linear-gradient(145deg,#ff5b5b,#b51f29) !important;color:#fff !important;border:3px solid #ff7070 !important}
+.tabs button,button{color:#fff !important}
