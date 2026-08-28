@@ -1002,3 +1002,15 @@ input[type="date"]{color-scheme:dark}
 .stats-filter-label{display:block;margin:14px 0 6px;font-weight:800}
 .arm-record{text-align:center}
 .arm-record span{font-size:1.35rem;font-weight:900}
+
+/* Dashboard arm filter */
+#statArmScope button.selected{
+  background:linear-gradient(145deg,#3b9cff,#1557b0)!important;
+  color:#fff!important;
+  border-color:#66b8ff!important;
+  box-shadow:0 0 0 2px rgba(59,156,255,.25),0 4px 12px rgba(0,0,0,.3)!important;
+}
+#statArmScope button:not(.selected){
+  background:#17222e!important;
+  color:#e9edf2!important;
+}

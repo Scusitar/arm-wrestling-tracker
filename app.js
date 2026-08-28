@@ -690,7 +690,24 @@ function renderTraining(){$("trainingList").innerHTML=state.training.slice(0,20)
 function renderOpponents(){let names=[...new Set([...state.opponents,...state.matches.map(m=>m.opponent)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));state.opponents=names;$("opponentList").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");$("profiles").innerHTML=names.map(n=>{let ms=state.matches.filter(m=>m.opponent===n);return `<div class="entry" data-opponent="${esc(n)}" tabindex="0"><div class="row"><b>${esc(n)}</b><b>${rec(ms)[0]}–${rec(ms)[1]}</b></div><span class="tag">Practice ${rec(ms.filter(m=>m.matchType==="Practice")).join("–")}</span><span class="tag">Tournament ${rec(ms.filter(m=>m.matchType==="Tournament")).join("–")}</span><span class="tag">Supermatch ${rec(ms.filter(m=>m.matchType==="Supermatch")).join("–")}</span></div>`}).join("")||'<p class="muted">No opponents yet.</p>';document.querySelectorAll("#profiles [data-opponent]").forEach(x=>x.addEventListener("click",()=>showOpponent(x.dataset.opponent)))}
 function showOpponent(name){let ms=state.matches.filter(m=>m.opponent===name),weights=[...new Set(ms.map(m=>m.oppWeight).filter(Boolean))].sort((a,b)=>a-b);let heights=[...new Set(ms.map(m=>m.oppHeight).filter(Boolean))].sort((a,b)=>a-b);let sections=["Practice","Tournament","Supermatch"].map(type=>{let x=ms.filter(m=>m.matchType===type),r=rec(x),st=techniqueStats(x),best=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];return `<div class="rec"><b>${type}: ${r[0]}–${r[1]}</b><br><span class="muted">${best?"Best recorded technique: "+esc(best.k)+" · "+Math.round(best.w/best.n*100)+"%":"Not enough technique data"}</span></div>`}).join("");$("opponentDetail").classList.remove("hidden");$("opponentDetail").innerHTML=`<div class="row"><h2>${esc(name)}</h2><button id="closeOpp">Close</button></div><p><b>Weight history:</b> ${weights.length?weights.join(", ")+" lb":"Not recorded"}</p><p><b>Height history:</b> ${heights.length?heights.map(h=>Math.floor(h/12)+"\'"+(h%12)+"\"").join(", "):"Not recorded"}</p>${sections}`;$("closeOpp").addEventListener("click",()=>$("opponentDetail").classList.add("hidden"))}
 $("statScope")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{scope=b.dataset.value;$("statScope").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));renderDashboard()}));
-$("statArmScope")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{armScope=b.dataset.value;$("statArmScope").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));renderDashboard()}));
+function bindDashboardArmScope(){
+ const el=$("statArmScope");if(!el)return;
+ el.querySelectorAll("button").forEach(b=>{
+  if(b.dataset.armScopeBound==="1")return;
+  b.dataset.armScopeBound="1";
+  b.addEventListener("click",()=>{
+   armScope=b.dataset.value;
+   el.querySelectorAll("button").forEach(x=>{
+    const on=x===b;
+    x.classList.toggle("selected",on);
+    x.setAttribute("aria-pressed",on?"true":"false");
+   });
+   renderDashboard();
+  });
+ });
+ el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("selected")?"true":"false"));
+}
+bindDashboardArmScope();
 
 function bindReadyGo(){
   const mode=$("readyGoMode");
@@ -710,5 +727,5 @@ voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);$("voiceTrimAll")?.addEventListener("click",voiceTrimAll);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=910").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=920").catch(()=>{});
 })();
