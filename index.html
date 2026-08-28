@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2563eb">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
+<title>Arm Wrestling Tracker</title>
+</head>
+<body>
+<main id="app">
+<header>
+  <div>
+    <h1>🥊 Arm Wrestling Tracker</h1>
+    <p>Practice · Tournament · Supermatch</p>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Main navigation">
+  <button data-page="dashboard" class="active">Dashboard</button>
+  <button data-page="match">+ Match</button>
+  <button data-page="training">Training</button>
+  <button data-page="history">History</button>
+  <button data-page="opponents">Opponents</button>
+</nav>
+
+<section id="dashboard" class="page active">
+  <div class="stats">
+    <article><span>Tournament</span><b id="tourRecord">0–0</b></article>
+    <article><span>Supermatches</span><b id="superRecord">0–0</b></article>
+    <article><span>Practice</span><b id="practiceRecord">0–0</b></article>
+    <article><span>Training logs</span><b id="trainingCount">0</b></article>
+  </div>
+  <article class="card">
+    <h2>My Stats</h2>
+    <p class="muted">Stats are kept separate by match type.</p>
+    <div class="segmented" id="statScope">
+      <button data-value="Tournament" class="selected">Tournament</button>
+      <button data-value="Supermatch">Supermatch</button>
+      <button data-value="Practice">Practice</button>
+    </div>
+    <div id="myStats"></div>
+  </article>
+  <article class="card">
+    <div class="row"><h2>Recent matches</h2><button class="primary" id="dashNewMatch">+ Match</button></div>
+    <div id="recent"></div>
+  </article>
+</section>
+
+<section id="match" class="page">
+  <article class="card">
+    <h2>New Match</h2>
+    <form id="matchForm">
+      <label>Opponent
+        <input id="opponent" list="opponentList" required placeholder="Opponent name">
+        <datalist id="opponentList"></datalist>
+      </label>
+
+      <label>Match type</label>
+      <div class="segmented" id="matchType">
+        <button type="button" data-value="Practice" class="selected">Practice</button>
+        <button type="button" data-value="Tournament">Tournament</button>
+        <button type="button" data-value="Supermatch">Supermatch</button>
+      </div>
+
+      <div class="two">
+        <div><label>Arm</label><div class="segmented" id="arm"><button type="button" data-value="Right" class="selected">Right</button><button type="button" data-value="Left">Left</button></div></div>
+        <div><label>Strap</label><div class="segmented" id="strap"><button type="button" data-value="No" class="selected">No</button><button type="button" data-value="Yes">Yes</button></div></div>
+      </div>
+
+      <label>Table side when facing head referee</label>
+      <div class="segmented" id="tableSide"><button type="button" data-value="Left" class="selected">Left</button><button type="button" data-value="Right">Right</button></div>
+
+      <div class="two">
+        <label>Your weight<select id="myWeight"></select></label>
+        <label>Opponent weight<select id="oppWeight"></select></label>
+      </div>
+      <div class="two">
+        <label>Your height<select id="myHeight"></select></label>
+        <label>Opponent height<select id="oppHeight"></select></label>
+      </div>
+
+      <label>Weight class<select id="weightClass">
+        <option>Not recorded</option><option>130 lb</option><option>150 lb</option><option>165 lb</option>
+        <option>176 lb</option><option>198 lb</option><option>220 lb</option><option>242 lb</option>
+        <option>242+ lb</option><option>Open Weight</option><option>Other</option>
+      </select></label>
+
+      <div id="singleFields">
+        <label>Result</label>
+        <div class="segmented" id="result"><button type="button" data-value="Win" class="selected">WIN</button><button type="button" data-value="Loss">LOSS</button></div>
+        <label>Who got the GO?</label>
+        <div class="segmented four" id="go">
+          <button type="button" data-value="I hit first" class="selected">I hit first</button>
+          <button type="button" data-value="Opponent hit first">They hit first</button>
+          <button type="button" data-value="Even">Even</button>
+          <button type="button" data-value="Unclear">Unclear</button>
+        </div>
+        <div class="two">
+          <label>YOUR TECHNIQUE<select id="myTech"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label>
+          <label>OPPONENT'S TECHNIQUE<select id="oppTech"><option>Not recorded</option><option>Toproll</option><option>Hook</option><option>Press</option><option>King's Move</option><option>Other</option></select></label>
+        </div>
+        <label>Match length<select id="length"><option>Not recorded</option><option>Under 5 seconds</option><option>5–30 seconds</option><option>Over 30 seconds</option></select></label>
+      </div>
+
+      <div id="superFields" class="hidden">
+        <div class="notice"><b>Supermatch</b><br>Strap is recorded for the match. Result, GO, techniques and length are recorded for each round.</div>
+        <div id="rounds"></div>
+        <button type="button" id="addRound">+ Add Round</button>
+      </div>
+
+      <label>Additional comments<textarea id="comments" rows="4" placeholder="Anything unusual or worth remembering"></textarea></label>
+      <button class="primary full" type="submit">SAVE MATCH</button>
+    </form>
+  </article>
+</section>
+
+<section id="training" class="page">
+  <article class="card">
+    <h2>Training Log</h2>
+    <form id="trainingForm">
+      <label>Training category<select id="tCategory">
+        <option>Pronation</option><option>Supination</option><option>Wrist flexion</option><option>Wrist extension</option>
+        <option>Grip / fingers</option><option>Back pressure</option><option>Side pressure</option><option>Rising</option>
+        <option>Table time</option><option>Ready-Go starts</option><option>General strength</option><option>Other</option>
+      </select></label>
+      <label>Arm</label><div class="segmented" id="trainingArm"><button type="button" data-value="Both" class="selected">Both</button><button type="button" data-value="Right">Right</button><button type="button" data-value="Left">Left</button></div>
+      <div class="two">
+        <label>Sets<select id="sets"></select></label><label>Reps<select id="reps"></select></label>
+      </div>
+      <div class="two">
+        <label>Resistance<select id="resistance"><option>Bodyweight</option><option>Band</option><option>Light</option><option>Moderate</option><option>Heavy</option></select></label>
+        <label>Intensity<select id="intensity"><option>Easy</option><option>Moderate</option><option>Hard</option><option>Max effort</option></select></label>
+      </div>
+      <label>Training quality</label><div class="segmented" id="quality"><button type="button" data-value="Good" class="selected">Good</button><button type="button" data-value="Average">Average</button><button type="button" data-value="Poor">Poor</button></div>
+      <label>Additional comments<textarea id="trainingComments" rows="4"></textarea></label>
+      <button class="primary full" type="submit">SAVE TRAINING</button>
+    </form>
+  </article>
+  <article class="card"><h2>Recent training</h2><div id="trainingList"></div></article>
+</section>
+
+<section id="history" class="page"><article class="card"><h2>History</h2><div id="historyList"></div></article></section>
+<section id="opponents" class="page">
+  <article class="card"><h2>Opponent Profiles</h2><p class="muted">Practice, tournament and supermatch stats remain separate.</p><div id="profiles"></div></article>
+  <article class="card hidden" id="opponentDetail"></article>
+</section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
