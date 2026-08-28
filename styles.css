@@ -849,3 +849,8 @@ option{background:#0b121a !important;color:#fff !important}
 .opponent-add-row .primary{white-space:nowrap}
 #opponentAddMessage{min-height:1.3em;margin-top:8px}
 @media(max-width:600px){.opponent-add-row{flex-direction:column}.opponent-add-row .primary{width:100%}}
+
+/* v3.33 motion reaction */
+.reaction-method-picker{margin:12px 0}
+#reactionMethod button{min-height:44px;font-weight:800}
+#reactionMethod button.selected{background:linear-gradient(145deg,#3b9cff,#1557b0)!important;color:#fff!important;border-color:#66b8ff!important;box-shadow:0 0 0 2px rgba(59,156,255,.22),0 4px 12px rgba(0,0,0,.28)!important}
