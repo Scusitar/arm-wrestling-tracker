@@ -13,14 +13,14 @@
 <header>
   <div>
     <h1>🥊 Arm Wrestling Tracker</h1>
-    <p>Practice · Tournament · Supermatch · <b>v2.3</b></p>
+    <p>Practice · Tournament · Supermatch · <b>v2.5</b></p>
   </div>
 </header>
 
 <nav class="tabs" aria-label="Main navigation">
   <button data-page="dashboard" class="active">Dashboard</button>
   <button data-page="match">+ Match</button>
-  <button data-page="training">Training</button><button data-page="readygo">Ready–Go</button>
+  <button data-page="training">Training</button><button data-page="readygo">Ready–Go</button><button data-page="voice">Voice Setup</button>
   <button data-page="history">History</button>
   <button data-page="opponents">Opponents</button><button id="refreshApp" type="button">Refresh App</button>
 </nav>
@@ -202,12 +202,38 @@
     </div>
   </article>
 </section>
+<section id="voice" class="page">
+  <article class="card">
+    <h2>🎙️ Voice Setup</h2>
+    <p class="muted">Record your own Ready and Go calls. Recordings stay on this device.</p>
+    <div class="segmented" id="voiceType">
+      <button type="button" data-value="ready" class="selected">READY</button>
+      <button type="button" data-value="go">GO</button>
+    </div>
+    <div class="voice-progress"><b id="voiceProgress">Ready 1 of 10</b></div>
+    <div class="voice-card">
+      <h3 id="voiceSlotTitle">Ready 1</h3>
+      <p id="voiceStatus" class="muted">No recording yet.</p>
+      <div class="voice-buttons">
+        <button type="button" id="voiceRecord" class="voice-record">● RECORD</button>
+        <button type="button" id="voicePlay" disabled>▶ PLAY</button>
+        <button type="button" id="voiceKeep" disabled>✓ KEEP</button>
+      </div>
+      <p class="muted">Say the command naturally and clearly. You can re-record any slot.</p>
+    </div>
+    <div class="two">
+      <div class="rec"><b>Ready recordings</b><br><span id="readyCount">0 / 10</span></div>
+      <div class="rec"><b>Go recordings</b><br><span id="goCount">0 / 10</span></div>
+    </div>
+    <p id="voiceSetupMessage" class="muted" aria-live="polite"></p>
+  </article>
+</section>
 <section id="history" class="page"><article class="card"><h2>History</h2><div id="historyList"></div></article></section>
 <section id="opponents" class="page">
   <article class="card"><h2>Opponent Profiles</h2><p class="muted">Practice, tournament and supermatch stats remain separate.</p><div id="profiles"></div></article>
   <article class="card hidden" id="opponentDetail"></article>
 </section>
 </main>
-<script src="app.js?v=230"></script>
+<script src="app.js?v=250"></script>
 </body>
 </html>

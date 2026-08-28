@@ -16,45 +16,75 @@ function deleteMatch(id){if(!confirm("Delete this match? This cannot be undone."
 function loadTrainingForEdit(id){const t=state.training.find(x=>x.id===id);if(!t)return;editingTrainingId=id;page("training");$("tCategory").value=t.category||"Pronation";$("sets").value=t.sets||"1";$("reps").value=t.reps||"1";$("resistance").value=t.resistance||"Bodyweight";$("intensity").value=t.intensity||"Easy";$("trainingComments").value=t.comments||"";setGroup("trainingArm","trainingArm",t.arm||"Both");setGroup("quality","quality",t.quality||"Good")}
 function deleteTraining(id){if(!confirm("Delete this training entry? This cannot be undone."))return;state.training=state.training.filter(t=>t.id!==id);save();renderDashboard();renderTraining()}
 
-let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[];
-function rgClear(){
-  if(rgTimer){clearTimeout(rgTimer);rgTimer=null}
-  rgRunning=false;rgGoAt=0;
-  if($("rgStart"))$("rgStart").disabled=false;
-  if($("rgStop"))$("rgStop").disabled=true;
-  if($("reactionStop"))$("reactionStop").disabled=true;
-  if($("reactionTap")){
-    $("reactionTap").disabled=false;
-    $("reactionTap").classList.remove("rg-wait","rg-go");
-    $("reactionTap").classList.add("rg-start");
-    $("reactionTap").textContent="START";
-  }
+
+let voiceType="ready",voiceSlot=0,voiceDB={ready:[],go:[]},voiceRecorder=null,voiceChunks=[],voiceStream=null,voiceCurrentBlob=null,voiceCurrentUrl=null;
+function voiceLoad(){try{const x=localStorage.getItem("awtVoiceLibrary");if(x)voiceDB=JSON.parse(x)||voiceDB}catch(e){}}
+function voiceSave(){try{localStorage.setItem("awtVoiceLibrary",JSON.stringify(voiceDB))}catch(e){}}
+function voiceUpdate(){
+  const count=voiceDB[voiceType].filter(Boolean).length;
+  $("voiceProgress").textContent=(voiceType==="ready"?"Ready ":"Go ")+(voiceSlot+1)+" of 10";
+  $("voiceSlotTitle").textContent=(voiceType==="ready"?"Ready ":"Go ")+(voiceSlot+1);
+  $("voiceStatus").textContent=voiceDB[voiceType][voiceSlot]?"Recording saved.":"No recording yet.";
+  $("voicePlay").disabled=!voiceDB[voiceType][voiceSlot]&&!voiceCurrentBlob;
+  $("voiceKeep").disabled=!voiceCurrentBlob;
+  $("readyCount").textContent=voiceDB.ready.filter(Boolean).length+" / 10";
+  $("goCount").textContent=voiceDB.go.filter(Boolean).length+" / 10";
 }
-function rgInitVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||null;window.speechSynthesis.cancel();return true}catch(e){return false}}
-function rgSpeak(text){try{if(!("speechSynthesis" in window))return;const u=new SpeechSynthesisUtterance(text);u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=.92;u.pitch=.98;u.volume=1;window.speechSynthesis.cancel();window.speechSynthesis.speak(u)}catch(e){}}
+function voiceSetType(t){voiceType=t;voiceSlot=0;voiceCurrentBlob=null;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===t))}
+async function voiceRecord(){
+  if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){$("voiceStatus").textContent="Voice recording is not supported by this browser.";return}
+  try{
+    voiceStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    voiceChunks=[];voiceCurrentBlob=null;
+    const opts=MediaRecorder.isTypeSupported("audio/webm;codecs=opus")?{mimeType:"audio/webm;codecs=opus"}:{};
+    voiceRecorder=new MediaRecorder(voiceStream,opts);
+    voiceRecorder.ondataavailable=e=>{if(e.data.size)voiceChunks.push(e.data)};
+    voiceRecorder.onstop=()=>{voiceCurrentBlob=new Blob(voiceChunks,{type:voiceRecorder.mimeType||"audio/webm"});voiceStream?.getTracks().forEach(t=>t.stop());voiceStream=null;$("voiceStatus").textContent="Recording ready — play it or keep it.";voiceUpdate()};
+    voiceRecorder.start();$("voiceRecord").textContent="■ STOP";$("voiceRecord").classList.add("recording");$("voiceStatus").textContent="Recording…";
+  }catch(e){$("voiceStatus").textContent="Microphone permission was not granted.";voiceStream?.getTracks().forEach(t=>t.stop())}
+}
+function voiceStop(){if(voiceRecorder&&voiceRecorder.state!=="inactive")voiceRecorder.stop();$("voiceRecord").textContent="● RECORD";$("voiceRecord").classList.remove("recording")}
+function voicePlay(){
+  const data=voiceCurrentBlob||voiceDB[voiceType][voiceSlot];if(!data)return;
+  try{const url=typeof data==="string"?data:URL.createObjectURL(data);const a=new Audio(url);a.play();a.onended=()=>{if(typeof data!=="string")URL.revokeObjectURL(url)}}catch(e){}
+}
+async function voiceKeep(){
+  if(!voiceCurrentBlob)return;
+  const reader=new FileReader();
+  reader.onload=()=>{voiceDB[voiceType][voiceSlot]=reader.result;voiceCurrentBlob=null;voiceSave();voiceUpdate();$("voiceStatus").textContent="Saved. Next slot is ready.";if(voiceSlot<9){voiceSlot++;voiceUpdate()}else if(voiceType==="ready"){voiceType="go";voiceSlot=0;voiceUpdate();$("voiceType").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===voiceType));$("voiceSetupMessage").textContent="All 10 Ready calls saved. Now record your 10 Go calls."}else{$("voiceSetupMessage").textContent="All 20 voice recordings are saved and ready to use."}};
+  reader.readAsDataURL(voiceCurrentBlob);
+}
+let rgMode="table",rgTimer=null,rgGoAt=0,rgRunning=false,rgReactionTimes=[],rgVoice=null;
+function rgLoadVoice(){try{if(!("speechSynthesis" in window))return false;const voices=window.speechSynthesis.getVoices();rgVoice=voices.find(v=>/en[-_]CA/i.test(v.lang))||voices.find(v=>/en[-_]US/i.test(v.lang))||voices.find(v=>/^en/i.test(v.lang))||voices[0]||null;return true}catch(e){return false}}
+if("speechSynthesis" in window){window.speechSynthesis.addEventListener("voiceschanged",rgLoadVoice);rgLoadVoice()}
+function rgInitVoice(){try{if(!("speechSynthesis" in window))return false;rgLoadVoice();window.speechSynthesis.cancel();return true}catch(e){return false}}
+function rgSay(text,onStart,onEnd){
+  try{
+    const arr=text.toLowerCase().startsWith("ready")?voiceDB.ready:voiceDB.go;
+    const clips=arr.filter(Boolean);
+    if(clips.length){
+      const data=clips[Math.floor(Math.random()*clips.length)];
+      const a=new Audio(data);
+      a.onplay=()=>{if(onStart)onStart()};
+      a.onended=()=>{if(onEnd)onEnd()};
+      a.onerror=()=>{if(onEnd)onEnd()};
+      a.play().catch(()=>{if(onEnd)onEnd()});
+      return true;
+    }
+    if(!("speechSynthesis" in window)){if(onEnd)onEnd();return false}
+    rgLoadVoice();const u=new SpeechSynthesisUtterance(text);if(rgVoice)u.voice=rgVoice;u.lang=rgVoice?.lang||"en-CA";u.rate=.95;u.pitch=1;u.volume=1;u.onstart=()=>{if(onStart)onStart()};u.onend=()=>{if(onEnd)onEnd()};u.onerror=()=>{if(onEnd)onEnd()};window.speechSynthesis.speak(u);return true;
+  }catch(e){if(onEnd)onEnd();return false}
+}
 function rgNextInterval(){return 2800+Math.random()*1200}
 function rgReadyGoDelay(){return 200+Math.random()*400}
-function rgSchedule(){if(!rgRunning)return;$("rgInstruction").textContent="READY";rgSpeak("Ready");rgTimer=setTimeout(()=>{if(!rgRunning)return;$("rgInstruction").textContent="GO";rgSpeak("Go");rgGoAt=performance.now();rgTimer=setTimeout(rgSchedule,rgNextInterval())},rgReadyGoDelay())}
-function rgStartTable(){rgClear();rgInitVoice();$("rgInstruction").textContent="GET READY…";rgRunning=true;$("rgStart").disabled=true;$("rgStop").disabled=false;rgTimer=setTimeout(rgSchedule,700)}
+function rgClear(){if(rgTimer){clearTimeout(rgTimer);rgTimer=null}rgRunning=false;rgGoAt=0;if($("rgStart"))$("rgStart").disabled=false;if($("rgStop"))$("rgStop").disabled=true;if($("reactionStop"))$("reactionStop").disabled=true;if($("reactionTap")){$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="START"}}
+function rgSchedule(){if(!rgRunning)return;$("rgInstruction").textContent="READY";rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("rgInstruction").textContent="GO";rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(rgSchedule,rgNextInterval())})},rgReadyGoDelay())})}
+function rgStartTable(){rgClear();rgInitVoice();rgRunning=true;$("rgInstruction").textContent="GET READY…";$("rgStart").disabled=true;$("rgStop").disabled=false;rgTimer=setTimeout(rgSchedule,100)}
 function rgStopTable(){rgClear();$("rgInstruction").textContent="Press START when you're ready."}
-function reactionRender(){const a=rgReactionTimes;const avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
-function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";rgGoAt=0;rgSpeak("Ready");rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");$("reactionTap").disabled=false;rgSpeak("Go");rgGoAt=performance.now();rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())},rgReadyGoDelay())}
-function reactionStart(){
-  rgClear();
-  rgInitVoice();
-  rgRunning=true;
-  if($("reactionStop"))$("reactionStop").disabled=false;
-  if($("reactionTap")){
-    $("reactionTap").disabled=true;
-    $("reactionTap").classList.remove("rg-start","rg-go");
-    $("reactionTap").classList.add("rg-wait");
-    $("reactionTap").textContent="WAIT FOR GO";
-  }
-  if($("falseStart"))$("falseStart").textContent="";
-  if($("reactionInstruction"))$("reactionInstruction").textContent="GET READY…";
-  rgTimer=setTimeout(reactionCycle,700);
-}
-function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO.";$("reactionTap").classList.remove("rg-wait","rg-go");$("reactionTap").classList.add("rg-start");$("reactionTap").textContent="START"}
+function reactionRender(){const a=rgReactionTimes,avg=a.length?a.reduce((x,y)=>x+y,0)/a.length:0;$("reactionAttempts").textContent=a.length;$("reactionBest").textContent=a.length?Math.min(...a).toFixed(0)+" ms":"—";$("reactionAvg").textContent=a.length?avg.toFixed(0)+" ms":"—";$("reactionLast").textContent=a.length?a[a.length-1].toFixed(0)+" ms":"—"}
+function reactionCycle(){if(!rgRunning)return;$("reactionInstruction").textContent="READY";$("reactionTap").disabled=true;$("reactionTap").textContent="WAIT FOR GO";$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");rgGoAt=0;rgSay("Ready",null,()=>{if(!rgRunning)return;rgTimer=setTimeout(()=>{if(!rgRunning)return;$("reactionInstruction").textContent="GO";$("reactionTap").textContent="TAP NOW";$("reactionTap").disabled=false;$("reactionTap").classList.remove("rg-wait","rg-start");$("reactionTap").classList.add("rg-go");rgSay("Go",()=>{rgGoAt=performance.now()},()=>{if(rgRunning)rgTimer=setTimeout(()=>{if(rgRunning&&!rgGoAt)reactionCycle()},rgNextInterval())})},rgReadyGoDelay())})}
+function reactionStart(){rgClear();rgInitVoice();rgRunning=true;$("reactionStop").disabled=false;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-start","rg-go");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("falseStart").textContent="";$("reactionInstruction").textContent="GET READY…";rgTimer=setTimeout(reactionCycle,100)}
+function reactionStop(){rgClear();$("reactionInstruction").textContent="Press START, then wait for GO."}
 function reactionTap(){if(!rgRunning)return;if(!rgGoAt){$("falseStart").textContent="False start — wait for GO.";return}const t=performance.now()-rgGoAt;rgReactionTimes.push(t);if(rgReactionTimes.length>100)rgReactionTimes.shift();rgGoAt=0;$("reactionTap").disabled=true;$("reactionTap").classList.remove("rg-go","rg-start");$("reactionTap").classList.add("rg-wait");$("reactionTap").textContent="WAIT FOR GO";$("reactionInstruction").textContent=t.toFixed(0)+" ms";reactionRender();setTimeout(()=>{if(rgRunning)reactionCycle()},500)}
 function setReadyGoMode(v){rgMode=v;$("readyGoMode").querySelectorAll("button").forEach(b=>b.classList.toggle("selected",b.dataset.value===v));$("tableReadyGo").classList.toggle("hidden",v!=="table");$("reactionReadyGo").classList.toggle("hidden",v!=="reaction");rgClear()}
 function page(id){document.querySelectorAll(".page").forEach(x=>x.classList.toggle("active",x.id===id));document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.page===id));if(id==="dashboard")renderDashboard();if(id==="history")renderHistory();if(id==="opponents")renderOpponents();if(id==="training")renderTraining()}
@@ -164,7 +194,10 @@ function bindReadyGo(){
   if(reactionButton) reactionButton.addEventListener("click",()=>{if(!rgRunning) reactionStart(); else reactionTap()});
 }
 try{renderDashboard();renderHistory();renderTraining();renderOpponents()}catch(e){console.error("Tracker startup error:",e)}
+voiceLoad();
+function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);voiceUpdate()}
 bindReadyGo();
+bindVoice();
 bindReadyGo();
 if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=172").catch(()=>{});
 })();
