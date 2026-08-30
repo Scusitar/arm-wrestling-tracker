@@ -702,30 +702,32 @@ function renderTechniqueAnalytics(){
   set("bestAgainstOppTech",bestAgainst?bestAgainst.tech:"Not enough data",bestAgainst?`Your win rate · ${bestAgainst.pct.toFixed(0)}% · ${bestAgainst.w}/${bestAgainst.n}`:"Need 3+ uses");
   set("worstAgainstOppTech",toughest?toughest.tech:"Not enough data",toughest?`Your win rate · ${toughest.pct.toFixed(0)}% · ${toughest.w}/${toughest.n}`:"Need 3+ uses");
 }
-function renderDashboard(){let t=rec(state.matches.filter(m=>m.matchType==="Tournament")),s=rec(state.matches.filter(m=>m.matchType==="Supermatch")),p=rec(state.matches.filter(m=>m.matchType==="Practice"));$("tourRecord").textContent=t.join("–");$("superRecord").textContent=s.join("–");$("practiceRecord").textContent=p.join("–");$("trainingCount").textContent=state.training.length;$("armRecords").innerHTML=["Right","Left"].map(a=>{const r=rec(state.matches.filter(m=>m.arm===a));return `<div class="rec arm-record"><b>${a} Arm</b><br><span>${r.join("–")}</span></div>`}).join("");let ms=dashboardScopedMatches(),st=techniqueStats(ms),all=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})),fav=all.sort((a,b)=>b.n-a.n)[0],good=all.filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0],bad=all.filter(x=>x.n>=3).sort((a,b)=>a.w/a.n-b.w/b.n)[0],opp=Object.entries(st.against).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];$("myStats").innerHTML=`<div class="two"><div class="rec"><b>Favorite technique</b><br>${fav?esc(fav.k):"Not enough data"}</div><div class="rec"><b>Most successful</b><br>${good?esc(good.k)+" · "+Math.round(good.w/good.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Least successful</b><br>${bad?esc(bad.k)+" · "+Math.round(bad.w/bad.n*100)+"% win rate":"Need 3+ attempts"}</div><div class="rec"><b>Best opponent technique against you</b><br>${opp?esc(opp.k)+" · opponents win "+Math.round(opp.w/opp.n*100)+"%":"Need 3+ attempts"}</div></div>`;$("recent").innerHTML=state.matches.slice(0,5).map(m=>`<div class="entry"><div class="row"><b>${esc(m.opponent)}</b><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} arm · strap ${esc(m.strap)}${m.matchType==="Supermatch"?" · "+m.rounds.length+" rounds":""}</div></div>`).join("")||'<p class="muted">No matches yet.</p>';renderTechniqueAnalytics();renderTechniqueBreakdown();}
-function renderHistory(){$("historyList").innerHTML=state.matches.map(m=>`<div class="entry"><div class="row"><div><b>${esc(m.opponent)}</b><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} · table side when facing head referee: ${esc(m.side)}${m.matchType==="Supermatch"?" · "+m.rounds.length+" rounds · strap by round":" · strap "+esc(m.strap||"No")}</div></div><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div>${m.comments?`<div style="margin-top:7px">${esc(m.comments)}</div>`:""}<div class="entry-actions"><button type="button" data-edit-match="${m.id}">Edit</button><button type="button" data-delete-match="${m.id}">Delete</button></div></div>`).join("")||'<p class="muted">No matches yet.</p>';document.querySelectorAll("[data-edit-match]").forEach(b=>b.addEventListener("click",()=>loadMatchForEdit(Number(b.dataset.editMatch))));document.querySelectorAll("[data-delete-match]").forEach(b=>b.addEventListener("click",()=>deleteMatch(Number(b.dataset.deleteMatch))))}
+function renderDashboard(){
+ let t=rec(state.matches.filter(m=>m.matchType==="Tournament")),
+     s=rec(state.matches.filter(m=>m.matchType==="Supermatch")),
+     p=rec(state.matches.filter(m=>m.matchType==="Practice"));
+ $("tourRecord").textContent=t.join("–");
+ $("superRecord").textContent=s.join("–");
+ $("practiceRecord").textContent=p.join("–");
+ $("trainingCount").textContent=state.training.length;
 
-function renderTraining(){$("trainingList").innerHTML=state.training.slice(0,20).map(t=>`<div class="entry"><b>${esc(t.category)}</b><div class="muted">${esc(t.arm)} · ${esc(t.sets)} sets × ${esc(t.reps)} reps · ${esc(t.intensity)} · ${esc(t.quality)}</div>${t.comments?`<div style="margin-top:7px">${esc(t.comments)}</div>`:""}<div class="entry-actions"><button type="button" data-edit-training="${t.id}">Edit</button><button type="button" data-delete-training="${t.id}">Delete</button></div></div>`).join("")||'<p class="muted">No training logs yet.</p>';document.querySelectorAll("[data-edit-training]").forEach(b=>b.addEventListener("click",()=>loadTrainingForEdit(Number(b.dataset.editTraining))));document.querySelectorAll("[data-delete-training]").forEach(b=>b.addEventListener("click",()=>deleteTraining(Number(b.dataset.deleteTraining))))}
+ let ms=dashboardScopedMatches(),st=techniqueStats(ms),
+     all=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})),
+     fav=all.sort((a,b)=>b.n-a.n)[0],
+     good=all.filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0],
+     bad=all.filter(x=>x.n>=3).sort((a,b)=>a.w/a.n-b.w/b.n)[0],
+     opp=Object.entries(st.against).map(([k,v])=>({k,...v,n:v.w+v.l}))
+       .filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];
 
-function renderOpponents(){let names=[...new Set([...state.opponents,...state.matches.map(m=>m.opponent)])].filter(Boolean).sort((a,b)=>a.localeCompare(b));state.opponents=names;$("opponentList").innerHTML=names.map(n=>`<option value="${esc(n)}">`).join("");$("profiles").innerHTML=names.map(n=>{let ms=state.matches.filter(m=>m.opponent===n);return `<div class="entry" data-opponent="${esc(n)}" tabindex="0"><div class="row"><b>${esc(n)}</b><b>${rec(ms)[0]}–${rec(ms)[1]}</b></div><span class="tag">Practice ${rec(ms.filter(m=>m.matchType==="Practice")).join("–")}</span><span class="tag">Tournament ${rec(ms.filter(m=>m.matchType==="Tournament")).join("–")}</span><span class="tag">Supermatch ${rec(ms.filter(m=>m.matchType==="Supermatch")).join("–")}</span></div>`}).join("")||'<p class="muted">No opponents yet.</p>';document.querySelectorAll("#profiles [data-opponent]").forEach(x=>x.addEventListener("click",()=>showOpponent(x.dataset.opponent)))}
-function showOpponent(name){let ms=state.matches.filter(m=>m.opponent===name),weights=[...new Set(ms.map(m=>m.oppWeight).filter(Boolean))].sort((a,b)=>a-b);let heights=[...new Set(ms.map(m=>m.oppHeight).filter(Boolean))].sort((a,b)=>a-b);let sections=["Practice","Tournament","Supermatch"].map(type=>{let x=ms.filter(m=>m.matchType===type),r=rec(x),st=techniqueStats(x),best=Object.entries(st.mine).map(([k,v])=>({k,...v,n:v.w+v.l})).filter(x=>x.n>=3).sort((a,b)=>b.w/b.n-a.w/a.n)[0];return `<div class="rec"><b>${type}: ${r[0]}–${r[1]}</b><br><span class="muted">${best?"Best recorded technique: "+esc(best.k)+" · "+Math.round(best.w/best.n*100)+"%":"Not enough technique data"}</span></div>`}).join("");$("opponentDetail").classList.remove("hidden");$("opponentDetail").innerHTML=`<div class="row"><h2>${esc(name)}</h2><button id="closeOpp">Close</button></div><p><b>Weight history:</b> ${weights.length?weights.join(", ")+" lb":"Not recorded"}</p><p><b>Height history:</b> ${heights.length?heights.map(h=>Math.floor(h/12)+"\'"+(h%12)+"\"").join(", "):"Not recorded"}</p>${sections}`;$("closeOpp").addEventListener("click",()=>$("opponentDetail").classList.add("hidden"))}
-$("statScope")?.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{scope=b.dataset.value;$("statScope").querySelectorAll("button").forEach(x=>x.classList.toggle("selected",x===b));renderDashboard()}));
-function bindDashboardArmScope(){
- const el=$("statArmScope");if(!el)return;
- el.querySelectorAll("button").forEach(b=>{
-  if(b.dataset.armScopeBound==="1")return;
-  b.dataset.armScopeBound="1";
-  b.addEventListener("click",()=>{
-   armScope=b.dataset.value;
-   el.querySelectorAll("button").forEach(x=>{
-    const on=x===b;
-    x.classList.toggle("selected",on);
-    x.setAttribute("aria-pressed",on?"true":"false");
-   });
-   renderDashboard();
-  });
- });
- el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.classList.contains("selected")?"true":"false"));
+ $("myStats").innerHTML=`<div class="two">
+  <div class="rec"><b>Favorite technique</b><br>${fav?esc(fav.k):"Not enough data"}</div>
+  <div class="rec"><b>Most successful</b><br>${good?esc(good.k)+" · "+Math.round(good.w/good.n*100)+"% win rate":"Need 3+ attempts"}</div>
+  <div class="rec"><b>Least successful</b><br>${bad?esc(bad.k)+" · "+Math.round(bad.w/bad.n*100)+"% win rate":"Need 3+ attempts"}</div>
+  <div class="rec"><b>Best opponent technique against you</b><br>${opp?esc(opp.k)+" · opponents win "+Math.round(opp.w/opp.n*100)+"%":"Need 3+ attempts"}</div>
+ </div>`;
+ $("recent").innerHTML=state.matches.slice(0,5).map(m=>`<div class="entry"><div class="row"><b>${esc(m.opponent)}</b><b class="${m.result==="Win"?"win":"loss"}">${m.result.toUpperCase()}</b></div><div class="muted">${esc(m.matchType)} · ${esc(m.arm)} arm${m.matchType==="Supermatch"?" · "+(m.rounds||[]).length+" rounds":""}</div></div>`).join("")||'<p class="muted">No matches yet.</p>';
+ renderTechniqueAnalytics();
+ renderTechniqueBreakdown();
 }
 bindDashboardArmScope();
 
@@ -747,5 +749,5 @@ voiceLoad();
 function bindVoice(){const t=$("voiceType"),r=$("voiceRecord"),p=$("voicePlay"),k=$("voiceKeep");if(t)t.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>voiceSetType(b.dataset.value)));if(r)r.addEventListener("click",()=>voiceRecorder&&voiceRecorder.state!=="inactive"?voiceStop():voiceRecord());if(p)p.addEventListener("click",voicePlay);if(k)k.addEventListener("click",voiceKeep);$("voiceTrimAll")?.addEventListener("click",voiceTrimAll);voiceUpdate()}
 bindReadyGo();
 bindVoice();
-if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=940").catch(()=>{});
+if("serviceWorker" in navigator)navigator.serviceWorker.register("sw.js?v=950").catch(()=>{});
 })();

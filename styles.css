@@ -1021,3 +1021,5 @@ input[type="date"]{color-scheme:dark}
 /* Supermatch round technique and length choices are buttons, not dropdowns. */
 .round .rm,.round .ro,.round .rl{margin-top:6px}
 .round .rm button,.round .ro button,.round .rl button{min-height:38px}
+
+.dashboard-stat-note{margin:-4px 0 12px}
